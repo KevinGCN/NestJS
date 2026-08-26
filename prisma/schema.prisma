@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RolUsuario {
+  cliente
+  empleado
+  admin
+}
+
+enum EstadoCita {
+  pendiente
+  confirmada
+  cancelada
+  completada
+}
+
+model Usuario {
+  id                 Int        @id @default(autoincrement())
+  nombre             String
+  apellido           String
+  email              String     @unique
+  passwordHash       String     @map("password_hash")
+  telefono           String?
+  fotoPerfilUrl      String?    @map("foto_perfil_url")
+  rol                RolUsuario @default(cliente)
+  activo             Boolean    @default(true)
+  fechaRegistro      DateTime   @default(now()) @map("fecha_registro")
+  fechaActualizacion DateTime   @updatedAt @map("fecha_actualizacion")
+
+  empleado           Empleado?
+  citas              Cita[]
+  galeriasSubidas    Galeria[]   @relation("SubidoPor")
+
+  @@map("usuarios")
+}
+
+model Empleado {
+  id                Int      @id @default(autoincrement())
+  usuarioId         Int      @unique @map("usuario_id")
+  especialidad      String?
+  biografia         String?
+  fechaContratacion DateTime @default(now()) @map("fecha_contratacion") @db.Date
+  activo            Boolean  @default(true)
+
+  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  horarios          HorarioTrabajador[]
+  citas             Cita[]
+  galerias          Galeria[]
+
+  @@map("empleados")
+}
+
+model HorarioTrabajador {
+  id          Int      @id @default(autoincrement())
+  empleadoId  Int      @map("empleado_id")
+  diaSemana   Int      @map("dia_semana")
+  horaInicio  DateTime @map("hora_inicio") @db.Time
+  horaFin     DateTime @map("hora_fin") @db.Time
+
+  empleado    Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+
+  @@unique([empleadoId, diaSemana, horaInicio])
+  @@map("horarios_trabajador")
+}
+
+model Galeria {
+  id           Int      @id @default(autoincrement())
+  subidoPorId  Int      @map("subido_por")
+  empleadoId   Int?     @map("empleado_id")
+  imagenUrl    String   @map("imagen_url")
+  titulo       String?
+  descripcion  String?
+  estilo       String?
+  fechaSubida  DateTime @default(now()) @map("fecha_subida")
+
+  subidoPor    Usuario   @relation("SubidoPor", fields: [subidoPorId], references: [id])
+  empleado     Empleado? @relation(fields: [empleadoId], references: [id], onDelete: SetNull)
+
+  @@map("galeria")
+}
+
+model Cita {
+  id                 Int        @id @default(autoincrement())
+  usuarioId          Int        @map("usuario_id")
+  empleadoId         Int        @map("empleado_id")
+  fecha              DateTime   @db.Date
+  horaInicio         DateTime   @map("hora_inicio") @db.Time
+  horaFin            DateTime   @map("hora_fin") @db.Time
+  estado             EstadoCita @default(pendiente)
+  notas              String?
+  fechaCreacion      DateTime   @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime   @updatedAt @map("fecha_actualizacion")
+
+  usuario            Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  empleado            Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+
+  @@unique([empleadoId, fecha, horaInicio])
+  @@map("citas")
+}
