@@ -6,6 +6,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -38,9 +39,9 @@ model Usuario {
   fechaRegistro      DateTime   @default(now()) @map("fecha_registro")
   fechaActualizacion DateTime   @updatedAt @map("fecha_actualizacion")
 
-  empleado           Empleado?
-  citas              Cita[]
-  galeriasSubidas    Galeria[]   @relation("SubidoPor")
+  empleado        Empleado?
+  citas           Cita[]
+  galeriasSubidas Galeria[] @relation("SubidoPor")
 
   @@map("usuarios")
 }
@@ -53,39 +54,39 @@ model Empleado {
   fechaContratacion DateTime @default(now()) @map("fecha_contratacion") @db.Date
   activo            Boolean  @default(true)
 
-  usuario           Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  horarios          HorarioTrabajador[]
-  citas             Cita[]
-  galerias          Galeria[]
+  usuario  Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  horarios HorarioTrabajador[]
+  citas    Cita[]
+  galerias Galeria[]
 
   @@map("empleados")
 }
 
 model HorarioTrabajador {
-  id          Int      @id @default(autoincrement())
-  empleadoId  Int      @map("empleado_id")
-  diaSemana   Int      @map("dia_semana")
-  horaInicio  DateTime @map("hora_inicio") @db.Time
-  horaFin     DateTime @map("hora_fin") @db.Time
+  id         Int      @id @default(autoincrement())
+  empleadoId Int      @map("empleado_id")
+  diaSemana  Int      @map("dia_semana")
+  horaInicio DateTime @map("hora_inicio") @db.Time
+  horaFin    DateTime @map("hora_fin") @db.Time
 
-  empleado    Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+  empleado Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
 
   @@unique([empleadoId, diaSemana, horaInicio])
   @@map("horarios_trabajador")
 }
 
 model Galeria {
-  id           Int      @id @default(autoincrement())
-  subidoPorId  Int      @map("subido_por")
-  empleadoId   Int?     @map("empleado_id")
-  imagenUrl    String   @map("imagen_url")
-  titulo       String?
-  descripcion  String?
-  estilo       String?
-  fechaSubida  DateTime @default(now()) @map("fecha_subida")
+  id          Int      @id @default(autoincrement())
+  subidoPorId Int      @map("subido_por")
+  empleadoId  Int?     @map("empleado_id")
+  imagenUrl   String   @map("imagen_url")
+  titulo      String?
+  descripcion String?
+  estilo      String?
+  fechaSubida DateTime @default(now()) @map("fecha_subida")
 
-  subidoPor    Usuario   @relation("SubidoPor", fields: [subidoPorId], references: [id])
-  empleado     Empleado? @relation(fields: [empleadoId], references: [id], onDelete: SetNull)
+  subidoPor Usuario   @relation("SubidoPor", fields: [subidoPorId], references: [id])
+  empleado  Empleado? @relation(fields: [empleadoId], references: [id], onDelete: SetNull)
 
   @@map("galeria")
 }
@@ -102,8 +103,8 @@ model Cita {
   fechaCreacion      DateTime   @default(now()) @map("fecha_creacion")
   fechaActualizacion DateTime   @updatedAt @map("fecha_actualizacion")
 
-  usuario            Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  empleado            Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  empleado Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
 
   @@unique([empleadoId, fecha, horaInicio])
   @@map("citas")
