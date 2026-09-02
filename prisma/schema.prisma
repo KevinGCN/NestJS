@@ -1,9 +1,8 @@
-generator client{
+generator client {
   provider = "prisma-client"
-  output   ="../src/generated/prisma"
-  
-  
+  output   = "../src/generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
 }
@@ -26,57 +25,57 @@ model citas {
 }
 
 model empleados {
-  id                  Int                   @id @default(autoincrement())
-  usuario_id          Int                   @unique
-  especialidad        String?
-  biografia           String?
-  fecha_contratacion  DateTime              @default(now()) @db.Date
-  activo              Boolean               @default(true)
-  citas               citas[]
-  usuarios            usuarios              @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
-  galeria             galeria[]
-  horarios_trabajador horarios_trabajador[]
+  id                   Int                   @id @default(autoincrement())
+  usuario_id           Int                   @unique
+  especialidad         String?
+  biografia            String?
+  fecha_contratacion   DateTime              @default(now()) @db.Date
+  activo               Boolean               @default(true)
+  citas                citas[]
+  usuarios             usuarios              @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  galeria              galeria[]
+  horarios_trabajador  horarios_trabajador[]
 }
 
 model galeria {
-  id           Int        @id @default(autoincrement())
-  subido_por   Int
-  empleado_id  Int?
-  imagen_url   String
-  titulo       String?
-  descripcion  String?
-  estilo       String?
-  fecha_subida DateTime   @default(now())
-  empleados    empleados? @relation(fields: [empleado_id], references: [id])
-  usuarios     usuarios   @relation(fields: [subido_por], references: [id])
+  id            Int        @id @default(autoincrement())
+  subido_por    Int
+  empleado_id   Int?
+  imagen_url    String
+  titulo        String?
+  descripcion   String?
+  estilo        String?
+  fecha_subida  DateTime   @default(now())
+  empleados     empleados? @relation(fields: [empleado_id], references: [id])
+  usuarios      usuarios   @relation(fields: [subido_por], references: [id])
 }
 
 model horarios_trabajador {
-  id          Int       @id @default(autoincrement())
-  empleado_id Int
-  dia_semana  Int
-  hora_inicio DateTime  @db.Time(6)
-  hora_fin    DateTime  @db.Time(6)
-  empleados   empleados @relation(fields: [empleado_id], references: [id])
+  id           Int       @id @default(autoincrement())
+  empleado_id  Int
+  dia_semana   Int
+  hora_inicio  DateTime  @db.Time(6)
+  hora_fin     DateTime  @db.Time(6)
+  empleados    empleados @relation(fields: [empleado_id], references: [id])
 
   @@unique([empleado_id, dia_semana, hora_inicio])
 }
 
 model usuarios {
-  id                  Int        @id @default(autoincrement())
-  nombre              String
-  apellido            String
-  email               String     @unique
-  password_hash       String
-  telefono            String?
-  foto_perfil_url     String?
-  rol                 RolUsuario @default(cliente)
-  activo              Boolean    @default(true)
-  fecha_registro      DateTime   @default(now())
-  fecha_actualizacion DateTime
-  citas               citas[]
-  empleados           empleados?
-  galeria             galeria[]
+  id                   Int        @id @default(autoincrement())
+  nombre               String
+  apellido             String
+  email                String     @unique
+  password_hash        String
+  telefono             String?
+  foto_perfil_url      String?
+  rol                  RolUsuario @default(cliente)
+  activo               Boolean    @default(true)
+  fecha_registro       DateTime   @default(now())
+  fecha_actualizacion  DateTime
+  citas                citas[]
+  empleados            empleados?
+  galeria              galeria[]
 }
 
 enum EstadoCita {
