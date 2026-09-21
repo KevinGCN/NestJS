@@ -6,6 +6,6 @@ import { UsuariosModule } from 'src/usuarios/usuarios.module';
 @Module({
   imports: [UsuariosModule],
   controllers: [AuthController],
-  providers: [AuthService]
+  providers: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }
