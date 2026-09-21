@@ -6,6 +6,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { EmpleadosModule } from './empleados/empleados.module';
 import { GaleriaModule } from './galeria/galeria.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { GaleriaModule } from './galeria/galeria.module';
     UsuariosModule,
     EmpleadosModule,
     GaleriaModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

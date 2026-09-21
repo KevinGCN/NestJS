@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UsuariosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async crear(createUsuarioDto: CreateUsuarioDto) {
     return this.prisma.usuarios.create({
@@ -12,25 +12,66 @@ export class UsuariosService {
         nombre: createUsuarioDto.nombre,
         apellido: createUsuarioDto.apellido,
         email: createUsuarioDto.email,
-        password_hash: createUsuarioDto.password_hash,
+        password_hash: createUsuarioDto.password,
         telefono: createUsuarioDto.telefono,
         foto_perfil_url: createUsuarioDto.foto_perfil_url,
         fecha_actualizacion: new Date(),
+      },
+
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        telefono: true,
+        foto_perfil_url: true,
+        rol: true,
+        activo: true,
+        fecha_registro: true,
+        fecha_actualizacion: true,
       },
     });
   }
 
   async obtenerTodos() {
-    return this.prisma.usuarios.findMany();
+    return this.prisma.usuarios.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        telefono: true,
+        foto_perfil_url: true,
+        rol: true,
+        activo: true,
+        fecha_registro: true,
+        fecha_actualizacion: true,
+      },
+    });
   }
 
   async obtenerUno(id: number) {
     const usuario = await this.prisma.usuarios.findUnique({
       where: { id },
+
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        telefono: true,
+        foto_perfil_url: true,
+        rol: true,
+        activo: true,
+        fecha_registro: true,
+        fecha_actualizacion: true,
+      },
     });
 
     if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      throw new NotFoundException(
+        `Usuario con ID ${id} no encontrado`,
+      );
     }
 
     return usuario;
@@ -53,6 +94,19 @@ export class UsuariosService {
 
     return this.prisma.usuarios.delete({
       where: { id },
+    });
+  }
+
+  async findCredentialsByEmail(email: string) {
+    return this.prisma.usuarios.findUnique({
+      where: {
+        email,
+      },
+
+      select: {
+        id: true,
+        password_hash: true,
+      },
     });
   }
 }
