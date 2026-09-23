@@ -1,16 +1,25 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUsuarioDto {
   @IsString()
+  @Matches(/\S/)
   nombre: string;
 
   @IsString()
+  @Matches(/\S/)
   apellido: string;
 
   @IsEmail()
   email: string;
 
   @IsString()
+  @Matches(/\S/)
   @MinLength(8)
   password: string;
 
