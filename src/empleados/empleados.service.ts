@@ -23,7 +23,7 @@ export class EmpleadosService {
 
   async obtenerTodos() {
     return this.prisma.empleados.findMany({
-      include: {
+      select: {
         usuarios: true,
         galeria: true,
       },

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hashPassword } from '../auth/password';
 
@@ -37,14 +38,20 @@ export class UsuariosService {
     return usuario;
   }
 
-  async actualizar(id: number, datos: any) {
-    await this.obtenerUno(id);
+  async actualizar(id: number, datos: UpdateUsuarioDto) {
+  await this.obtenerUno(id);
 
-    return this.prisma.usuarios.update({
-      where: { id },
-      data: { ...datos, fecha_actualizacion: new Date() },
-    });
-  }
+  const { password, ...resto } = datos;
+
+  return this.prisma.usuarios.update({
+    where: { id },
+    data: {
+      ...resto,
+      ...(password ? { password_hash: await hashPassword(password) } : {}),
+      fecha_actualizacion: new Date(),
+    },
+  });
+}
 
   async eliminar(id: number) {
     await this.obtenerUno(id);

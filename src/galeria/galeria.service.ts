@@ -55,7 +55,7 @@ export class GaleriaService {
     return this.prisma.galeria.update({
       where: { id },
       data: updateGaleriaDto,
-      include: {
+      select: {
         usuarios: true,
         empleados: true,
       },
