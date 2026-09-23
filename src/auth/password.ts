@@ -38,3 +38,8 @@ export async function verifyPassword(
     return false;
   }
 }
+
+// Hash con formato válido pero sin contraseña real detrás.
+// Se usa cuando el email no existe, para no delatar por tiempo de respuesta
+// si una cuenta existe o no (ver AuthService.login(), punto 8).
+export const DUMMY_HASH = `scrypt$16384$8$1$${'0'.repeat(32)}$${'0'.repeat(128)}`;
