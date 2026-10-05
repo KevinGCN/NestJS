@@ -1,0 +1,119 @@
+<main class="employees-page">
+
+  <div class="encabezado">
+    <h1>Nuestros Tatuadores</h1>
+    <p>Conoce al equipo de artistas de Ink Creature</p>
+
+    <!--  Botón solo visible para CEO / Admin -->
+    @if (esAdmin) {
+      <button class="btn-agregar" (click)="abrirAgregar()">+ Agregar Tatuador</button>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+  @if (cargando()) {
+    <p class="error-msg">Cargando tatuadores...</p>
+  }
+
+  <div class="catalogo">
+    @for (t of tatuadores(); track t.id) {
+      <div class="tarjeta">
+
+        <div class="tarjeta-foto">
+          <img [src]="t.foto" [alt]="t.nombre">
+          <span class="badge">{{ t.especialidad }}</span>
+        </div>
+
+        <div class="tarjeta-info">
+          <h2>{{ t.nombre }}</h2>
+          <p class="cargo">{{ t.cargo }}</p>
+          <p class="experiencia">
+            @if (t.experiencia) {
+              {{ t.experiencia }} años de experiencia
+            } @else {
+              En el estudio desde {{ t.desde }}
+            }
+          </p>
+          @if (t.estrellas) {
+            <div class="estrellas">{{ obtenerEstrellas(t.estrellas) }}</div>
+          }
+        </div>
+
+        <div class="tarjeta-footer">
+          <a [routerLink]="['/employeeCV', t.id]" class="btn-perfil">Ver perfil</a>
+
+          <!-- Botones de edición solo para CEO / Admin -->
+          @if (esAdmin) {
+            <div class="admin-btns">
+              <button class="btn-editar" (click)="abrirEditar(t)">✏️ Editar</button>
+              <button class="btn-eliminar" (click)="eliminar(t)">🗑️ Eliminar</button>
+            </div>
+          }
+        </div>
+
+      </div>
+    } @empty {
+      @if (!cargando()) {
+        <p class="error-msg">Aún no hay tatuadores registrados.</p>
+      }
+    }
+  </div>
+
+</main>
+
+<!-- MODAL: Agregar / Editar Tatuador  (solo admin/CEO) -->
+@if (mostrarModal()) {
+  <div class="modal-overlay" (click)="cerrarModal()"></div>
+
+  <div class="modal">
+
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Tatuador' : 'Agregar Tatuador' }}</h2>
+      <button class="modal-close" (click)="cerrarModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      @if (fotoPreview()) {
+        <div class="foto-preview">
+          <img [src]="fotoPreview()" alt="Preview">
+        </div>
+      }
+
+      <label>Foto del tatuador *</label>
+      <input type="file" accept="image/*" (change)="cargarFoto($event)">
+
+      <label>Nombre *</label>
+      <input type="text" [(ngModel)]="form.nombre" placeholder="Nombre">
+
+      <label>Apellido *</label>
+      <input type="text" [(ngModel)]="form.apellido" placeholder="Apellido">
+
+      @if (!modoEdicion) {
+        <label>Correo *</label>
+        <input type="email" [(ngModel)]="form.email" placeholder="correo@ejemplo.com">
+      }
+
+      <label>Especialidad *</label>
+      <input type="text" [(ngModel)]="form.especialidad" placeholder="Ej: Estilo Anime, Realismo...">
+
+      <label>Descripción</label>
+      <textarea [(ngModel)]="form.descripcion" rows="3" placeholder="Descripción del artista..."></textarea>
+
+      @if (errorForm()) {
+        <p class="error-msg">{{ errorForm() }}</p>
+      }
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-guardar" [disabled]="guardando()" (click)="guardar()">
+        {{ guardando() ? 'Guardando...' : (modoEdicion ? 'Guardar cambios' : 'Agregar') }}
+      </button>
+    </div>
+
+  </div>
+}

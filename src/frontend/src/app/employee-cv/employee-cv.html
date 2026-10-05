@@ -1,0 +1,48 @@
+@if (empleado(); as e) {
+  <main class="cv-page">
+
+    <div class="perfil">
+
+      <div class="perfil-foto">
+        <img [src]="e.foto" [alt]="e.nombre">
+      </div>
+
+      <div class="perfil-info">
+        <span class="badge">{{ e.especialidad }}</span>
+        <h1>{{ e.nombre }}</h1>
+        <p class="cargo">{{ e.cargo }}</p>
+        @if (e.estrellas) {
+          <div class="estrellas">{{ obtenerEstrellas(e.estrellas) }}</div>
+        }
+
+        <div class="datos">
+          <div class="dato">
+            @if (e.experiencia) {
+              <span class="etiqueta">Experiencia</span>
+              <span class="valor">{{ e.experiencia }} años</span>
+            } @else {
+              <span class="etiqueta">En el estudio desde</span>
+              <span class="valor">{{ e.desde }}</span>
+            }
+          </div>
+          <div class="dato">
+            <span class="etiqueta">Especialidad</span>
+            <span class="valor">{{ e.especialidad }}</span>
+          </div>
+        </div>
+
+        @if (e.descripcion) {
+          <p class="descripcion">{{ e.descripcion }}</p>
+        } @else {
+          <p class="descripcion sin-desc">Descripción próximamente...</p>
+        }
+
+      </div>
+    </div>
+
+  </main>
+} @else if (error()) {
+  <p style="color:white; text-align:center; padding:60px;">{{ error() }}</p>
+} @else {
+  <p style="color:white; text-align:center; padding:60px;">Cargando perfil...</p>
+}
