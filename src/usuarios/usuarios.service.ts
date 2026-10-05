@@ -38,13 +38,20 @@ export class UsuariosService {
   }
 
   async actualizar(id: number, datos: any) {
-    await this.obtenerUno(id);
+  await this.obtenerUno(id);
 
-    return this.prisma.usuarios.update({
-      where: { id },
-      data: { ...datos, fecha_actualizacion: new Date() },
-    });
+  const data = { ...datos };
+
+  if (data.password) {
+    data.password_hash = await hashPassword(data.password);
+    delete data.password;
   }
+
+  return this.prisma.usuarios.update({
+    where: { id },
+    data: { ...data, fecha_actualizacion: new Date() },
+  });
+}
 
   async eliminar(id: number) {
     await this.obtenerUno(id);

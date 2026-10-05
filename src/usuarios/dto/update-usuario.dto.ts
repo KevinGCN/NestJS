@@ -14,8 +14,8 @@ export class UpdateUsuarioDto {
   email?: string;
 
   @IsOptional()
-  @IsString()
-  password_hash?: string;
+@IsString()
+password?: string;
 
   @IsOptional()
   @IsString()
