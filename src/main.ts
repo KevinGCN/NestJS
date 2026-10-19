@@ -16,6 +16,10 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL ?? 'https://ink-creature-v2.netlify.app',
   });
 
+  app.enableCors({
+    origin: 'http://localhost:4200',
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

@@ -53,6 +53,12 @@ export class UsuariosService {
   });
 }
 
+  return this.prisma.usuarios.update({
+    where: { id },
+    data: { ...data, fecha_actualizacion: new Date() },
+  });
+}
+
   async eliminar(id: number) {
     await this.obtenerUno(id);
     return this.prisma.usuarios.delete({ where: { id } });
