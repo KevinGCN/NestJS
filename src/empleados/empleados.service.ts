@@ -3,6 +3,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 
+// Nunca devolver password_hash al cliente.
+const usuarioSeguro = { omit: { password_hash: true } } as const;
+
 @Injectable()
 export class EmpleadosService {
   constructor(private readonly prisma: PrismaService) {}
@@ -16,15 +19,16 @@ export class EmpleadosService {
         activo: createEmpleadoDto.activo ?? true,
       },
       include: {
-        usuarios: true,
+        usuarios: usuarioSeguro,
       },
     });
   }
 
   async obtenerTodos() {
+    // `include` en vez de `select`: así también devuelve id, especialidad, biografia y activo.
     return this.prisma.empleados.findMany({
-      select: {
-        usuarios: true,
+      include: {
+        usuarios: usuarioSeguro,
         galeria: true,
       },
     });
@@ -34,7 +38,7 @@ export class EmpleadosService {
     const empleado = await this.prisma.empleados.findUnique({
       where: { id },
       include: {
-        usuarios: true,
+        usuarios: usuarioSeguro,
         galeria: true,
       },
     });
@@ -53,7 +57,7 @@ export class EmpleadosService {
       where: { id },
       data: updateEmpleadoDto,
       include: {
-        usuarios: true,
+        usuarios: usuarioSeguro,
       },
     });
   }
