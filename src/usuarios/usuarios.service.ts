@@ -1,3 +1,4 @@
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -8,6 +9,7 @@ import { hashPassword } from '../auth/password';
 export class UsuariosService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Crear un usuario y guardar su contraseña cifrada mediante hash
   async crear(createUsuarioDto: CreateUsuarioDto) {
     const password_hash = await hashPassword(createUsuarioDto.password);
 
@@ -24,12 +26,41 @@ export class UsuariosService {
     });
   }
 
+  // Obtener todos los usuarios
   async obtenerTodos() {
-    return this.prisma.usuarios.findMany();
+    return this.prisma.usuarios.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        rol: true,
+        activo: true,
+        telefono: true,
+        foto_perfil_url: true,
+        fecha_registro: true,
+        fecha_actualizacion: true,
+      },
+    });
   }
 
+  // Obtener un usuario por su ID sin exponer la contraseña
   async obtenerUno(id: number) {
-    const usuario = await this.prisma.usuarios.findUnique({ where: { id } });
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        rol: true,
+        activo: true,
+        telefono: true,
+        foto_perfil_url: true,
+        fecha_registro: true,
+        fecha_actualizacion: true,
+      },
+    });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -38,41 +69,59 @@ export class UsuariosService {
     return usuario;
   }
 
+  // Actualizar los datos de un usuario
   async actualizar(id: number, datos: UpdateUsuarioDto) {
-  await this.obtenerUno(id);
-
-  const { password, ...resto } = datos;
-
-  return this.prisma.usuarios.update({
-    where: { id },
-    data: {
-      ...resto,
-      ...(password ? { password_hash: await hashPassword(password) } : {}),
-      fecha_actualizacion: new Date(),
-    },
-  });
-}
-
-  return this.prisma.usuarios.update({
-    where: { id },
-    data: { ...data, fecha_actualizacion: new Date() },
-  });
-}
-
-  async eliminar(id: number) {
     await this.obtenerUno(id);
-    return this.prisma.usuarios.delete({ where: { id } });
-  }
 
-  // Consulta interna para Auth: NUNCA se expone como endpoint público
-  async findCredentialsByEmail(email: string) {
-    return this.prisma.usuarios.findUnique({
-      where: { email },
-      select: { id: true, password_hash: true },
+    const { password, ...resto } = datos;
+
+    return this.prisma.usuarios.update({
+      where: { id },
+      data: {
+        ...resto,
+        ...(password
+          ? { password_hash: await hashPassword(password) }
+          : {}),
+        fecha_actualizacion: new Date(),
+      },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        rol: true,
+        activo: true,
+        telefono: true,
+        foto_perfil_url: true,
+        fecha_registro: true,
+        fecha_actualizacion: true,
+      },
     });
   }
 
-  // Usada por JwtStrategy en /auth/me: devuelve null en vez de lanzar error
+  // Eliminar un usuario
+  async eliminar(id: number) {
+    await this.obtenerUno(id);
+
+    return this.prisma.usuarios.delete({
+      where: { id },
+    });
+  }
+
+  // Consulta interna para Auth: solo obtiene los datos necesarios para validar
+  // las credenciales. No debe exponerse como endpoint público.
+  async findCredentialsByEmail(email: string) {
+    return this.prisma.usuarios.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        password_hash: true,
+      },
+    });
+  }
+
+  // Usada por JwtStrategy en /auth/me.
+  // Devuelve null si el usuario no existe y nunca incluye la contraseña.
   async obtenerPublicoOrNull(id: number) {
     return this.prisma.usuarios.findUnique({
       where: { id },
@@ -85,7 +134,6 @@ export class UsuariosService {
         activo: true,
         fecha_registro: true,
         fecha_actualizacion: true,
-        // password_hash queda fuera a propósito
       },
     });
   }
