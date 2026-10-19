@@ -13,6 +13,7 @@ const EXTENSION: Record<string, string> = {
   'image/webp': '.webp',
 };
 
+//what is Multer?
 export async function guardarImagen(archivo: Express.Multer.File): Promise<string> {
   const ext = EXTENSION[archivo.mimetype];
   if (!ext) throw new BadRequestException('Tipo de imagen no permitido');
