@@ -16,7 +16,7 @@ export class EmpleadosService {
         activo: createEmpleadoDto.activo ?? true,
       },
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
       },
     });
   }
@@ -24,7 +24,7 @@ export class EmpleadosService {
   async obtenerTodos() {
     return this.prisma.empleados.findMany({
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
         galeria: true,
       },
     });
@@ -34,7 +34,7 @@ export class EmpleadosService {
     const empleado = await this.prisma.empleados.findUnique({
       where: { id },
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
         galeria: true,
       },
     });
@@ -53,7 +53,7 @@ export class EmpleadosService {
       where: { id },
       data: updateEmpleadoDto,
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
       },
     });
   }

@@ -18,7 +18,7 @@ export class GaleriaService {
         estilo: createGaleriaDto.estilo,
       },
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
         empleados: true,
       },
     });
@@ -27,7 +27,7 @@ export class GaleriaService {
   async obtenerTodos() {
     return this.prisma.galeria.findMany({
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
         empleados: true,
       },
     });
@@ -37,7 +37,7 @@ export class GaleriaService {
     const tatuaje = await this.prisma.galeria.findUnique({
       where: { id },
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
         empleados: true,
       },
     });
@@ -56,7 +56,7 @@ export class GaleriaService {
       where: { id },
       data: updateGaleriaDto,
       include: {
-        usuarios: true,
+        usuarios: { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } },
         empleados: true,
       },
     });

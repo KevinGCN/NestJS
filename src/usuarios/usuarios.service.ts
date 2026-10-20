@@ -2,6 +2,21 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hashPassword } from '../auth/password';
+import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+
+// Campos públicos del usuario: no incluye password_hash.
+const USUARIO_SELECT = {
+  id: true,
+  nombre: true,
+  apellido: true,
+  email: true,
+  telefono: true,
+  foto_perfil_url: true,
+  rol: true,
+  activo: true,
+  fecha_registro: true,
+  fecha_actualizacion: true,
+} as const;
 
 @Injectable()
 export class UsuariosService {
@@ -20,15 +35,21 @@ export class UsuariosService {
         foto_perfil_url: createUsuarioDto.foto_perfil_url,
         fecha_actualizacion: new Date(),
       },
+      select: USUARIO_SELECT,
     });
   }
 
   async obtenerTodos() {
-    return this.prisma.usuarios.findMany();
+    return this.prisma.usuarios.findMany({
+      select: USUARIO_SELECT,
+    });
   }
 
   async obtenerUno(id: number) {
-    const usuario = await this.prisma.usuarios.findUnique({ where: { id } });
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id },
+      select: USUARIO_SELECT,
+    });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -37,36 +58,62 @@ export class UsuariosService {
     return usuario;
   }
 
-  async actualizar(id: number, datos: any) {
+  async actualizar(id: number, datos: UpdateUsuarioDto) {
   await this.obtenerUno(id);
 
-  const data = { ...datos };
+  const data: {
+    nombre?: string;
+    apellido?: string;
+    email?: string;
+    telefono?: string;
+    foto_perfil_url?: string;
+    password_hash?: string;
+    fecha_actualizacion: Date;
+  } = {
+    fecha_actualizacion: new Date(),
+  };
 
-  if (data.password) {
-    data.password_hash = await hashPassword(data.password);
-    delete data.password;
+  if (datos.nombre !== undefined) data.nombre = datos.nombre;
+  if (datos.apellido !== undefined) data.apellido = datos.apellido;
+  if (datos.email !== undefined) data.email = datos.email;
+  if (datos.telefono !== undefined) data.telefono = datos.telefono;
+  if (datos.foto_perfil_url !== undefined) {
+    data.foto_perfil_url = datos.foto_perfil_url;
+  }
+
+  if (datos.password !== undefined) {
+    data.password_hash = await hashPassword(datos.password);
   }
 
   return this.prisma.usuarios.update({
     where: { id },
-    data: { ...data, fecha_actualizacion: new Date() },
+    data,
+    select: USUARIO_SELECT,
   });
 }
 
   async eliminar(id: number) {
     await this.obtenerUno(id);
-    return this.prisma.usuarios.delete({ where: { id } });
-  }
 
-  // Consulta interna para Auth: NUNCA se expone como endpoint público
-  async findCredentialsByEmail(email: string) {
-    return this.prisma.usuarios.findUnique({
-      where: { email },
-      select: { id: true, password_hash: true },
+    return this.prisma.usuarios.delete({
+      where: { id },
+      select: USUARIO_SELECT,
     });
   }
 
-  // Usada por JwtStrategy en /auth/me: devuelve null en vez de lanzar error
+  // Consulta interna para Auth: necesita el hash para verificar el login.
+    async findCredentialsByEmail(email: string) {
+    return this.prisma.usuarios.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        password_hash: true,
+        activo: true,
+      },
+    });
+  }
+
+  // Consulta para /auth/me: devuelve datos públicos, sin password_hash.
   async obtenerPublicoOrNull(id: number) {
     return this.prisma.usuarios.findUnique({
       where: { id },
@@ -79,7 +126,6 @@ export class UsuariosService {
         activo: true,
         fecha_registro: true,
         fecha_actualizacion: true,
-        // password_hash queda fuera a propósito
       },
     });
   }
