@@ -8,7 +8,7 @@ const usuarioSeguro = { omit: { password_hash: true } } as const;
 
 const relaciones = {
   usuarios: usuarioSeguro,
-  // incluye el usuario del tatuador para poder mostrar su nombre en la galería
+  // Incluye el usuario del tatuador para mostrar su nombre en la galería.
   empleados: { include: { usuarios: usuarioSeguro } },
 } as const;
 
@@ -53,7 +53,6 @@ export class GaleriaService {
   async actualizar(id: number, updateGaleriaDto: UpdateGaleriaDto) {
     await this.obtenerUno(id);
 
-    // Antes usaba `select` y devolvía solo las relaciones; ahora devuelve el registro completo.
     return this.prisma.galeria.update({
       where: { id },
       data: updateGaleriaDto,

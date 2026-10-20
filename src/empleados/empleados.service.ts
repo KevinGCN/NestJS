@@ -25,7 +25,7 @@ export class EmpleadosService {
   }
 
   async obtenerTodos() {
-    // `include` en vez de `select`: así también devuelve id, especialidad, biografia y activo.
+    // `include` conserva los campos del empleado y añade sus relaciones.
     return this.prisma.empleados.findMany({
       include: {
         usuarios: usuarioSeguro,

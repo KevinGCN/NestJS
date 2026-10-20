@@ -16,12 +16,20 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL ?? 'https://ink-creature-v2.netlify.app',
   });
 
+  app.enableCors({
+  origin: [
+    'http://localhost:4200',
+    'https://ink-creature-v2.netlify.app',
+  ],
+});
+
   app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-    }),
-  );
+  new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }),
+);
 
   // Sirve las imágenes subidas en /uploads/<archivo>
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
