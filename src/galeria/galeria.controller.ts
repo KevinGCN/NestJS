@@ -23,7 +23,6 @@ export class GaleriaController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Post()
-  @Post()
   crear(@Body() createGaleriaDto: CreateGaleriaDto) {
     return this.galeriaService.crear(createGaleriaDto);
   }
@@ -41,7 +40,6 @@ export class GaleriaController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Patch(':id')
-  @Patch(':id')
   actualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateGaleriaDto: UpdateGaleriaDto,
@@ -51,7 +49,6 @@ export class GaleriaController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  @Delete(':id')
   @Delete(':id')
   eliminar(@Param('id', ParseIntPipe) id: number) {
     return this.galeriaService.eliminar(id);

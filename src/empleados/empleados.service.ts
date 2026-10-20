@@ -3,8 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 
-// Nunca devolver password_hash al cliente.
-const usuarioSeguro = { omit: { password_hash: true } } as const;
+// Solo campos públicos del usuario: nunca password_hash, email ni teléfono.
+const usuarioSeguro = { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } } as const;
 
 @Injectable()
 export class EmpleadosService {
