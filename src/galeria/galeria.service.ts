@@ -3,8 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateGaleriaDto } from './dto/create-galeria.dto';
 import { UpdateGaleriaDto } from './dto/update-galeria.dto';
 
-// Nunca devolver password_hash al cliente.
-const usuarioSeguro = { omit: { password_hash: true } } as const;
+// Solo campos públicos del usuario: nunca password_hash, email ni teléfono.
+const usuarioSeguro = { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } } as const;
 
 const relaciones = {
   usuarios: usuarioSeguro,
