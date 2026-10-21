@@ -10,6 +10,7 @@ import { CitasModule } from './citas/citas.module';
 import { HorariosTrabajadorModule } from './horarios-trabajador/horarios-trabajador.module';
 import { AuthModule } from './auth/auth.module';
 import { ImagenesModule } from './imagenes/imagenes.module';
+import { IaModule } from './ia/ia.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ImagenesModule } from './imagenes/imagenes.module';
     HorariosTrabajadorModule,
     AuthModule,
     ImagenesModule,
+    IaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
