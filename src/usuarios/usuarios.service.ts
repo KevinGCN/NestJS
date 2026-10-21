@@ -4,6 +4,7 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hashPassword } from '../auth/password';
+import { RolUsuario } from '../generated/prisma/enums';
 
 // Selección segura compartida: jamás exponer password_hash en las respuestas.
 const usuarioSeguro = {
@@ -99,6 +100,20 @@ export class UsuariosService {
         fecha_registro: true,
         fecha_actualizacion: true,
       },
+    });
+  }
+
+  // Cambiar el rol de un usuario (solo admin - lo restringe RolesGuard).
+  async cambiarRol(id: number, rol: RolUsuario) {
+    await this.obtenerUno(id);
+
+    return this.prisma.usuarios.update({
+      where: { id },
+      data: {
+        rol,
+        fecha_actualizacion: new Date(),
+      },
+      select: usuarioSeguro,
     });
   }
 

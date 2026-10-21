@@ -14,7 +14,6 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  // Una sola configuración de CORS (dos llamadas seguidas se pisaban entre sí:
   // la de localhost anulaba la de producción y Netlify recibía bloqueo CORS).
   const orígenes = ['http://localhost:4200'];
   if (process.env.FRONTEND_URL) {
