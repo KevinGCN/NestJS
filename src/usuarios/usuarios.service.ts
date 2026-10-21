@@ -1,9 +1,23 @@
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hashPassword } from '../auth/password';
+
+// Selección segura compartida: jamás exponer password_hash en las respuestas.
+const usuarioSeguro = {
+  id: true,
+  nombre: true,
+  apellido: true,
+  email: true,
+  rol: true,
+  activo: true,
+  telefono: true,
+  foto_perfil_url: true,
+  fecha_registro: true,
+  fecha_actualizacion: true,
+} as const;
 
 @Injectable()
 export class UsuariosService {
@@ -13,34 +27,34 @@ export class UsuariosService {
   async crear(createUsuarioDto: CreateUsuarioDto) {
     const password_hash = await hashPassword(createUsuarioDto.password);
 
-    return this.prisma.usuarios.create({
-      data: {
-        nombre: createUsuarioDto.nombre,
-        apellido: createUsuarioDto.apellido,
-        email: createUsuarioDto.email,
-        password_hash,
-        telefono: createUsuarioDto.telefono,
-        foto_perfil_url: createUsuarioDto.foto_perfil_url,
-        fecha_actualizacion: new Date(),
-      },
-    });
+    try {
+      return await this.prisma.usuarios.create({
+        data: {
+          nombre: createUsuarioDto.nombre,
+          apellido: createUsuarioDto.apellido,
+          email: createUsuarioDto.email,
+          password_hash,
+          telefono: createUsuarioDto.telefono,
+          foto_perfil_url: createUsuarioDto.foto_perfil_url,
+          fecha_actualizacion: new Date(),
+        },
+        select: usuarioSeguro,
+      });
+    } catch (e) {
+      // Email único violado → 409 en vez de un 500 opaco.
+      if ((e as { code?: string })?.code === 'P2002') {
+        throw new ConflictException(
+          `El correo ${createUsuarioDto.email} ya está registrado`,
+        );
+      }
+      throw e;
+    }
   }
 
   // Obtener todos los usuarios
   async obtenerTodos() {
     return this.prisma.usuarios.findMany({
-      select: {
-        id: true,
-        nombre: true,
-        apellido: true,
-        email: true,
-        rol: true,
-        activo: true,
-        telefono: true,
-        foto_perfil_url: true,
-        fecha_registro: true,
-        fecha_actualizacion: true,
-      },
+      select: usuarioSeguro,
     });
   }
 
@@ -48,18 +62,7 @@ export class UsuariosService {
   async obtenerUno(id: number) {
     const usuario = await this.prisma.usuarios.findUnique({
       where: { id },
-      select: {
-        id: true,
-        nombre: true,
-        apellido: true,
-        email: true,
-        rol: true,
-        activo: true,
-        telefono: true,
-        foto_perfil_url: true,
-        fecha_registro: true,
-        fecha_actualizacion: true,
-      },
+      select: usuarioSeguro,
     });
 
     if (!usuario) {
@@ -125,16 +128,9 @@ export class UsuariosService {
   async obtenerPublicoOrNull(id: number) {
     return this.prisma.usuarios.findUnique({
       where: { id },
-      select: {
-        id: true,
-        nombre: true,
-        apellido: true,
-        email: true,
-        rol: true,
-        activo: true,
-        fecha_registro: true,
-        fecha_actualizacion: true,
-      },
+      // Mismo conjunto seguro que el resto del módulo: incluye los campos
+      // de perfil (telefono, foto_perfil_url) pero nunca password_hash.
+      select: usuarioSeguro,
     });
   }
 }
