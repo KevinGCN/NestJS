@@ -14,13 +14,23 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  // la de localhost anulaba la de producción y Netlify recibía bloqueo CORS).
-  const orígenes = ['http://localhost:4200'];
-  if (process.env.FRONTEND_URL) {
-    orígenes.push(process.env.FRONTEND_URL);
+  // CORS: el frontend de desarrollo (ng serve en localhost:4200) y el
+  // desplegado en Netlify. FRONTEND_URL admite varios origenes separados
+  // por comas, p. ej. "https://mi-app.netlify.app,https://otro.netlify.app".
+  // En produccion SI hay que definirla: sin ella el navegador recibe
+  // "blocked by CORS policy" y nunca llega a llamar al API.
+  const origenes = ['http://localhost:4200'];
+  const frontends = process.env.FRONTEND_URL;
+  if (frontends) {
+    origenes.push(
+      ...frontends
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean),
+    );
   }
 
-  app.enableCors({ origin: orígenes });
+  app.enableCors({ origin: origenes });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -29,7 +39,9 @@ async function bootstrap() {
     }),
   );
 
-  // Sirve las imágenes subidas en /uploads/<archivo>
+  // Las imagenes ya NO se guardan en disco: viven en la base de datos y se
+  // sirven con GET /api/imagenes/:id. Este servicio estatico se mantiene
+  // solo por compatibilidad con imagenes legacy que quedaran en /uploads/.
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
   await app.listen(process.env.PORT ?? 3000);

@@ -20,7 +20,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "set-rol": "node scripts/set-rol.js",
     "set-password": "node scripts/set-password.js",
-    "postinstall": "prisma skills sync || exit 0"
+    "prisma:generate": "prisma generate",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:status": "prisma migrate status",
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate && prisma skills sync || exit 0"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -79,6 +83,9 @@
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

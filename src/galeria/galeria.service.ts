@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ImagenesService } from '../imagenes/imagenes.service';
 import { CreateGaleriaDto } from './dto/create-galeria.dto';
 import { UpdateGaleriaDto } from './dto/update-galeria.dto';
 
@@ -14,7 +15,10 @@ const relaciones = {
 
 @Injectable()
 export class GaleriaService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly imagenesService: ImagenesService,
+  ) {}
 
   async crear(createGaleriaDto: CreateGaleriaDto) {
     return this.prisma.galeria.create({
@@ -62,10 +66,16 @@ export class GaleriaService {
   }
 
   async eliminar(id: number) {
-    await this.obtenerUno(id);
+    const tatuaje = await this.obtenerUno(id);
 
-    return this.prisma.galeria.delete({
+    const eliminado = await this.prisma.galeria.delete({
       where: { id },
     });
+
+    // La imagen vive en la BD (o en el disco con el flujo legacy): hay que
+    // borrar el binario para no dejar archivos huérfanos.
+    await this.imagenesService.eliminarPorUrl(tatuaje.imagen_url);
+
+    return eliminado;
   }
 }

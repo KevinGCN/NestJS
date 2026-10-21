@@ -1,0 +1,6 @@
+# Los archivos de migracion de Prisma deben SIEMPRE quedar con LF.
+# El checksum que Prisma guarda en `proyecto7._prisma_migrations` es el
+# sha256 del contenido con LF; si git los convierte a CRLF (core.autocrlf),
+# Prisma reporta "the migration was modified after it was applied".
+prisma/migrations/**/*.sql text eol=lf
+prisma/schema.prisma text eol=lf

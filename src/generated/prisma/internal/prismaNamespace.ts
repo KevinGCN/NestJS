@@ -400,6 +400,7 @@ export const ModelName = {
   citas: 'citas',
   empleados: 'empleados',
   galeria: 'galeria',
+  imagenes: 'imagenes',
   horarios_trabajador: 'horarios_trabajador',
   usuarios: 'usuarios'
 } as const
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "citas" | "empleados" | "galeria" | "horarios_trabajador" | "usuarios"
+    modelProps: "citas" | "empleados" | "galeria" | "imagenes" | "horarios_trabajador" | "usuarios"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -640,6 +641,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.galeriaCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.GaleriaCountAggregateOutputType> | number
+        }
+      }
+    }
+    imagenes: {
+      payload: Prisma.$imagenesPayload<ExtArgs>
+      fields: Prisma.imagenesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.imagenesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.imagenesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>
+        }
+        findFirst: {
+          args: Prisma.imagenesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.imagenesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>
+        }
+        findMany: {
+          args: Prisma.imagenesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>[]
+        }
+        create: {
+          args: Prisma.imagenesCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>
+        }
+        createMany: {
+          args: Prisma.imagenesCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.imagenesCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>[]
+        }
+        delete: {
+          args: Prisma.imagenesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>
+        }
+        update: {
+          args: Prisma.imagenesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>
+        }
+        deleteMany: {
+          args: Prisma.imagenesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.imagenesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.imagenesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>[]
+        }
+        upsert: {
+          args: Prisma.imagenesUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$imagenesPayload>
+        }
+        aggregate: {
+          args: Prisma.ImagenesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImagenes>
+        }
+        groupBy: {
+          args: Prisma.imagenesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImagenesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.imagenesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImagenesCountAggregateOutputType> | number
         }
       }
     }
@@ -872,6 +947,18 @@ export const GaleriaScalarFieldEnum = {
 export type GaleriaScalarFieldEnum = (typeof GaleriaScalarFieldEnum)[keyof typeof GaleriaScalarFieldEnum]
 
 
+export const ImagenesScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  mime_type: 'mime_type',
+  tamano: 'tamano',
+  data: 'data',
+  fecha_subida: 'fecha_subida'
+} as const
+
+export type ImagenesScalarFieldEnum = (typeof ImagenesScalarFieldEnum)[keyof typeof ImagenesScalarFieldEnum]
+
+
 export const Horarios_trabajadorScalarFieldEnum = {
   id: 'id',
   empleado_id: 'empleado_id',
@@ -990,6 +1077,20 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'Bytes'
+ */
+export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+    
+
+
+/**
+ * Reference to a field of type 'Bytes[]'
+ */
+export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
     
 
 
@@ -1174,6 +1275,7 @@ export type GlobalOmitConfig = {
   citas?: Prisma.citasOmit
   empleados?: Prisma.empleadosOmit
   galeria?: Prisma.galeriaOmit
+  imagenes?: Prisma.imagenesOmit
   horarios_trabajador?: Prisma.horarios_trabajadorOmit
   usuarios?: Prisma.usuariosOmit
 }

@@ -14,18 +14,22 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GaleriaService } from './galeria.service';
+import { ImagenesService } from '../imagenes/imagenes.service';
 import { CreateGaleriaDto } from './dto/create-galeria.dto';
 import { UpdateGaleriaDto } from './dto/update-galeria.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { guardarImagen, IMAGEN_MAX_BYTES } from '../common/imagenes';
+import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 
 @Controller('galeria')
 export class GaleriaController {
-  constructor(private readonly galeriaService: GaleriaService) {}
+  constructor(
+    private readonly galeriaService: GaleriaService,
+    private readonly imagenesService: ImagenesService,
+  ) {}
 
   // Subida de archivos (multipart/form-data, campo "imagen").
-  // Guarda el archivo en /uploads y devuelve la URL para registrarla
-  // después en POST /api/galeria.
+  // El binario se guarda en la base de datos (tabla `imagenes`) y se devuelve
+  // la ruta pública "/api/imagenes/<id>" para registrarla en POST /api/galeria.
   @UseGuards(JwtAuthGuard)
   @Post('upload')
   @UseInterceptors(
@@ -35,8 +39,8 @@ export class GaleriaController {
     if (!archivo) {
       throw new BadRequestException('Falta el archivo "imagen"');
     }
-    const url = await guardarImagen(archivo);
-    return { url };
+    const imagen = await this.imagenesService.guardar(archivo);
+    return { url: imagen.url, id: imagen.id };
   }
 
   // Crear/Modificar/Borrar imágenes exige sesión (JWT); consultar es público.

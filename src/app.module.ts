@@ -9,6 +9,7 @@ import { GaleriaModule } from './galeria/galeria.module';
 import { CitasModule } from './citas/citas.module';
 import { HorariosTrabajadorModule } from './horarios-trabajador/horarios-trabajador.module';
 import { AuthModule } from './auth/auth.module';
+import { ImagenesModule } from './imagenes/imagenes.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthModule } from './auth/auth.module';
     CitasModule,
     HorariosTrabajadorModule,
     AuthModule,
+    ImagenesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

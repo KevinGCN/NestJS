@@ -33,6 +33,11 @@ export type empleados = Prisma.empleadosModel
  */
 export type galeria = Prisma.galeriaModel
 /**
+ * Model imagenes
+ * 
+ */
+export type imagenes = Prisma.imagenesModel
+/**
  * Model horarios_trabajador
  * 
  */

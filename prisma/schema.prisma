@@ -56,6 +56,17 @@ model galeria {
   @@schema("proyecto7")
 }
 
+model imagenes {
+  id           Int      @id @default(autoincrement())
+  nombre       String
+  mime_type    String
+  tamano       Int
+  data         Bytes    @db.ByteA
+  fecha_subida DateTime @default(now())
+
+  @@schema("proyecto7")
+}
+
 model horarios_trabajador {
   id          Int       @id @default(autoincrement())
   empleado_id Int

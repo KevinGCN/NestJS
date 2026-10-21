@@ -3,6 +3,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { ImagenesService } from '../imagenes/imagenes.service';
 import { hashPassword } from '../auth/password';
 import { RolUsuario } from '../generated/prisma/enums';
 
@@ -22,7 +23,10 @@ const usuarioSeguro = {
 
 @Injectable()
 export class UsuariosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly imagenesService: ImagenesService,
+  ) {}
 
   // Crear un usuario y guardar su contraseña cifrada mediante hash
   async crear(createUsuarioDto: CreateUsuarioDto) {
@@ -117,13 +121,41 @@ export class UsuariosService {
     });
   }
 
+  /**
+   * Actualiza la foto de perfil con la ruta de la imagen ya guardada
+   * ("/api/imagenes/<id>") y elimina la imagen anterior para no dejar
+   * binarios huérfanos en la base de datos.
+   */
+  async actualizarFoto(id: number, url: string) {
+    const anterior = await this.obtenerUno(id);
+
+    const usuario = await this.prisma.usuarios.update({
+      where: { id },
+      data: {
+        foto_perfil_url: url,
+        fecha_actualizacion: new Date(),
+      },
+      select: usuarioSeguro,
+    });
+
+    await this.imagenesService.eliminarPorUrl(anterior.foto_perfil_url);
+
+    return usuario;
+  }
+
   // Eliminar un usuario
   async eliminar(id: number) {
-    await this.obtenerUno(id);
+    const usuario = await this.obtenerUno(id);
 
-    return this.prisma.usuarios.delete({
+    const eliminado = await this.prisma.usuarios.delete({
       where: { id },
     });
+
+    // La foto de perfil es una imagen en la BD: se borra para no dejar
+    // binarios huérfanos.
+    await this.imagenesService.eliminarPorUrl(usuario.foto_perfil_url);
+
+    return eliminado;
   }
 
   // Consulta interna para Auth: solo obtiene los datos necesarios para validar

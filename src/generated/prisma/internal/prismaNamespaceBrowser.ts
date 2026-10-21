@@ -54,6 +54,7 @@ export const ModelName = {
   citas: 'citas',
   empleados: 'empleados',
   galeria: 'galeria',
+  imagenes: 'imagenes',
   horarios_trabajador: 'horarios_trabajador',
   usuarios: 'usuarios'
 } as const
@@ -114,6 +115,18 @@ export const GaleriaScalarFieldEnum = {
 } as const
 
 export type GaleriaScalarFieldEnum = (typeof GaleriaScalarFieldEnum)[keyof typeof GaleriaScalarFieldEnum]
+
+
+export const ImagenesScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  mime_type: 'mime_type',
+  tamano: 'tamano',
+  data: 'data',
+  fecha_subida: 'fecha_subida'
+} as const
+
+export type ImagenesScalarFieldEnum = (typeof ImagenesScalarFieldEnum)[keyof typeof ImagenesScalarFieldEnum]
 
 
 export const Horarios_trabajadorScalarFieldEnum = {

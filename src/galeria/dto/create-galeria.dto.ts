@@ -1,4 +1,5 @@
-import { IsInt, IsOptional, IsString, Min, IsUrl } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsImagenUrl } from '../../common/validadores';
 
 export class CreateGaleriaDto {
   @IsInt()
@@ -10,8 +11,9 @@ export class CreateGaleriaDto {
   @Min(1)
   empleado_id?: number;
 
+  // URL absoluta o ruta del backend ("/api/imagenes/<id>").
   @IsString()
-  @IsUrl()
+  @IsImagenUrl()
   imagen_url: string;
 
   @IsOptional()

@@ -11,6 +11,7 @@
 export type * from './models/citas.js'
 export type * from './models/empleados.js'
 export type * from './models/galeria.js'
+export type * from './models/imagenes.js'
 export type * from './models/horarios_trabajador.js'
 export type * from './models/usuarios.js'
 export type * from './commonInputTypes.js'
