@@ -35,7 +35,7 @@ export class AuthService {
       credenciales ? credenciales.password_hash : DUMMY_HASH,
     );
 
-    if (!credenciales || !passwordValida) {
+        if (!credenciales || !passwordValida || !credenciales.activo) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 

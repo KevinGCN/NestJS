@@ -25,12 +25,17 @@ async function bootstrap() {
   // ruta pública sin prefijo excepto las imágenes legacy de /uploads.
   app.setGlobalPrefix('api');
 
-  // CORS: el frontend de desarrollo (ng serve en localhost:4200) y el
-  // desplegado en Netlify. FRONTEND_URL admite varios origenes separados
-  // por comas, p. ej. "https://mi-app.netlify.app,https://otro.netlify.app".
-  // En produccion SI hay que definirla: sin ella el navegador recibe
-  // "blocked by CORS policy" y nunca llega a llamar al API.
-  const origenes = ['http://localhost:4200'];
+  // CORS: el frontend de desarrollo (ng serve en localhost:4200) y los
+  // despliegues de Netlify. `FRONTEND_URL` añade más orígenes sin tocar código
+  // (varios separados por comas, p. ej.
+  // "https://mi-app.netlify.app,https://otro.netlify.app"). En producción SI
+  // hay que definirla: sin ella el navegador recibe "blocked by CORS policy" y
+  // nunca llega a llamar al API.
+  const origenes = [
+    'http://localhost:4200',
+    'https://ink-creature-v2.netlify.app',
+    'https://inkcreature.netlify.app',
+  ];
   const frontends = process.env.FRONTEND_URL;
   if (frontends) {
     origenes.push(
@@ -46,11 +51,15 @@ async function bootstrap() {
   // ValidationPipe global sobre los DTO:
   // - whitelist: descarta cualquier propiedad que no esté declarada en el DTO
   //   (evita que un cliente cuele campos como `rol` al actualizar un usuario).
+  // - forbidNonWhitelisted: en vez de descartar en silencio, responde 400 si el
+  //   body trae una propiedad desconocida; así un intento de inyección de
+  //   campos se nota en lugar de pasar desapercibido.
   // - transform: convierte el cuerpo/params al tipo del DTO (p. ej. strings
   //   numéricos de la URL → number) y aplica las conversiones de class-transformer.
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      forbidNonWhitelisted: true,
       transform: true,
     }),
   );

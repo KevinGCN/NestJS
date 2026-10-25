@@ -1,4 +1,10 @@
-import { IsEmail, IsOptional, IsString, MinLength} from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 /**
  * Body de `PATCH /api/usuarios/:id` (actualización parcial: todo opcional).
@@ -10,11 +16,13 @@ import { IsEmail, IsOptional, IsString, MinLength} from 'class-validator';
 export class UpdateUsuarioDto {
   @IsOptional()
   @IsString()
+  @Matches(/\S/)
   /** Si no viene, el campo no se toca (Prisma solo escribe lo enviado). */
   nombre?: string;
 
   @IsOptional()
   @IsString()
+  @Matches(/\S/)
   /** Opcional, igual que `nombre`. */
   apellido?: string;
 
@@ -28,6 +36,7 @@ export class UpdateUsuarioDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/\S/)
   @MinLength(8)
   /**
    * Opcional; si viene se vuelve a cifrar con scrypt antes de guardar. Nunca se

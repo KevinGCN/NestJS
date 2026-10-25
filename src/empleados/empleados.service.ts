@@ -9,11 +9,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 
-// Nunca devolver password_hash al cliente.
-// Se usa `omit` (no `select`) para no repetir la lista de columnas; el precio
-// es que cualquier columna nueva de `usuarios` se publicaría sola, así que si
-// algún día se añade otro dato sensible hay que pasarse a un select explícito.
-const usuarioSeguro = { omit: { password_hash: true } } as const;
+// Solo campos públicos del usuario: nunca password_hash, email ni teléfono.
+// Es un `select` explícito a propósito: así una columna nueva de `usuarios` NO
+// se publica sola; hay que añadirla aquí a mano si de verdad es pública.
+const usuarioSeguro = { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } } as const;
 
 /**
  * CRUD del catálogo de tatuadores. No valida roles ni permisos: eso vive en
@@ -41,7 +40,7 @@ export class EmpleadosService {
   }
 
   async obtenerTodos() {
-    // `include` en vez de `select`: así también devuelve id, especialidad, biografia y activo.
+    // `include` conserva los campos del empleado y añade sus relaciones.
     return this.prisma.empleados.findMany({
       include: {
         usuarios: usuarioSeguro,

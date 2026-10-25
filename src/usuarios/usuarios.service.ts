@@ -1,8 +1,7 @@
-
 /**
  * Lógica de negocio de usuarios.
- * Toda consulta pasa por un select explícito (`usuarioSeguro`) para que el
- * `password_hash` nunca salga del backend: la única lectura que lo pide es
+ * Toda consulta pública pasa por el select explícito `USUARIO_SELECT` para que
+ * el `password_hash` nunca salga del backend: la única lectura que lo pide es
  * `findCredentialsByEmail`, de uso interno de Auth.
  */
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
@@ -13,16 +12,18 @@ import { ImagenesService } from '../imagenes/imagenes.service';
 import { hashPassword } from '../auth/password';
 import { RolUsuario } from '../generated/prisma/enums';
 
-// Selección segura compartida: jamás exponer password_hash en las respuestas.
-const usuarioSeguro = {
+// Campos públicos del usuario: no incluye password_hash. Es un `select`
+// explícito a propósito, para que una columna sensible nueva no se publique
+// sola; si algún día hay que exponer otro campo, se añade aquí a mano.
+const USUARIO_SELECT = {
   id: true,
   nombre: true,
   apellido: true,
   email: true,
-  rol: true,
-  activo: true,
   telefono: true,
   foto_perfil_url: true,
+  rol: true,
+  activo: true,
   fecha_registro: true,
   fecha_actualizacion: true,
 } as const;
@@ -50,7 +51,7 @@ export class UsuariosService {
           foto_perfil_url: createUsuarioDto.foto_perfil_url,
           fecha_actualizacion: new Date(),
         },
-        select: usuarioSeguro,
+        select: USUARIO_SELECT,
       });
     } catch (e) {
       // Email único violado → 409 en vez de un 500 opaco.
@@ -66,7 +67,7 @@ export class UsuariosService {
   // Obtener todos los usuarios
   async obtenerTodos() {
     return this.prisma.usuarios.findMany({
-      select: usuarioSeguro,
+      select: USUARIO_SELECT,
     });
   }
 
@@ -74,7 +75,7 @@ export class UsuariosService {
   async obtenerUno(id: number) {
     const usuario = await this.prisma.usuarios.findUnique({
       where: { id },
-      select: usuarioSeguro,
+      select: USUARIO_SELECT,
     });
 
     if (!usuario) {
@@ -84,35 +85,44 @@ export class UsuariosService {
     return usuario;
   }
 
-  // Actualizar los datos de un usuario
+  // Actualizar los datos de un usuario.
+  // Se copian campo por campo (no `...datos`) para que el DTO sea el único que
+  // decide qué se puede tocar: así `rol` y `activo` no pueden colarse aunque
+  // alguien manipule el body.
   async actualizar(id: number, datos: UpdateUsuarioDto) {
     await this.obtenerUno(id);
 
-    // `password` se separa del resto porque no es una columna: si viajara en
-    // `...resto`, Prisma fallaría. Solo se guarda ya cifrado en `password_hash`.
-    const { password, ...resto } = datos;
+    // `password` no es una columna: se transforma en `password_hash` ya cifrado
+    // y solo si viene en el body.
+    const data: {
+      nombre?: string;
+      apellido?: string;
+      email?: string;
+      telefono?: string;
+      foto_perfil_url?: string;
+      password_hash?: string;
+      fecha_actualizacion: Date;
+    } = {
+      fecha_actualizacion: new Date(),
+    };
+
+    if (datos.nombre !== undefined) data.nombre = datos.nombre;
+    if (datos.apellido !== undefined) data.apellido = datos.apellido;
+    if (datos.email !== undefined) data.email = datos.email;
+    if (datos.telefono !== undefined) data.telefono = datos.telefono;
+
+    if (datos.foto_perfil_url !== undefined) {
+      data.foto_perfil_url = datos.foto_perfil_url;
+    }
+
+    if (datos.password !== undefined) {
+      data.password_hash = await hashPassword(datos.password);
+    }
 
     return this.prisma.usuarios.update({
       where: { id },
-      data: {
-        ...resto,
-        ...(password
-          ? { password_hash: await hashPassword(password) }
-          : {}),
-        fecha_actualizacion: new Date(),
-      },
-      select: {
-        id: true,
-        nombre: true,
-        apellido: true,
-        email: true,
-        rol: true,
-        activo: true,
-        telefono: true,
-        foto_perfil_url: true,
-        fecha_registro: true,
-        fecha_actualizacion: true,
-      },
+      data,
+      select: USUARIO_SELECT,
     });
   }
 
@@ -128,7 +138,7 @@ export class UsuariosService {
         rol,
         fecha_actualizacion: new Date(),
       },
-      select: usuarioSeguro,
+      select: USUARIO_SELECT,
     });
   }
 
@@ -146,7 +156,7 @@ export class UsuariosService {
         foto_perfil_url: url,
         fecha_actualizacion: new Date(),
       },
-      select: usuarioSeguro,
+      select: USUARIO_SELECT,
     });
 
     await this.imagenesService.eliminarPorUrl(anterior.foto_perfil_url);
@@ -154,12 +164,14 @@ export class UsuariosService {
     return usuario;
   }
 
-  // Eliminar un usuario
+  // Eliminar un usuario. El `select` evita que el `password_hash` viaje en la
+  // respuesta del DELETE.
   async eliminar(id: number) {
     const usuario = await this.obtenerUno(id);
 
     const eliminado = await this.prisma.usuarios.delete({
       where: { id },
+      select: USUARIO_SELECT,
     });
 
     // La foto de perfil es una imagen en la BD: se borra para no dejar
@@ -173,12 +185,14 @@ export class UsuariosService {
   // las credenciales. No debe exponerse como endpoint público.
   // Es el ÚNICO punto que lee `password_hash` a propósito (lo compara el login);
   // su resultado nunca debe devolverse tal cual en una respuesta HTTP.
+  // `activo` viaja aquí porque el login rechaza cuentas desactivadas.
   async findCredentialsByEmail(email: string) {
     return this.prisma.usuarios.findUnique({
       where: { email },
       select: {
         id: true,
         password_hash: true,
+        activo: true,
       },
     });
   }
@@ -190,7 +204,7 @@ export class UsuariosService {
       where: { id },
       // Mismo conjunto seguro que el resto del módulo: incluye los campos
       // de perfil (telefono, foto_perfil_url) pero nunca password_hash.
-      select: usuarioSeguro,
+      select: USUARIO_SELECT,
     });
   }
 }

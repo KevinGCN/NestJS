@@ -18,6 +18,8 @@ import { ImagenesService } from '../imagenes/imagenes.service';
 import { CreateGaleriaDto } from './dto/create-galeria.dto';
 import { UpdateGaleriaDto } from './dto/update-galeria.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 
 /**
@@ -26,7 +28,7 @@ import { IMAGEN_MAX_BYTES } from '../common/imagenes';
  * BD y devuelve `{ url: "/api/imagenes/<id>" }`; después `POST /api/galeria`
  * registra los metadatos con esa url. Así la fila de `galeria` solo guarda una
  * ruta relativa, que sigue siendo válida en cualquier host.
- * Consultar es público; escribir exige JWT.
+ * Consultar es público; escribir es solo de admin.
  */
 @Controller('galeria')
 export class GaleriaController {
@@ -38,7 +40,9 @@ export class GaleriaController {
   // Subida de archivos (multipart/form-data, campo "imagen").
   // El binario se guarda en la base de datos (tabla `imagenes`) y se devuelve
   // la ruta pública "/api/imagenes/<id>" para registrarla en POST /api/galeria.
-  @UseGuards(JwtAuthGuard)
+  // Solo admin: es el único rol que puede publicar en la galería.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('imagen', { limits: { fileSize: IMAGEN_MAX_BYTES } }),
@@ -51,10 +55,11 @@ export class GaleriaController {
     return { url: imagen.url, id: imagen.id };
   }
 
-  // Crear/Modificar/Borrar imágenes exige sesión (JWT); consultar es público.
+  // Crear/Modificar/Borrar imágenes es exclusivo de admin; consultar es público.
   // `imagen_url` debe ser la ruta que devolvió /upload (IsImagenUrl la valida),
   // no un archivo: aquí no se sube nada, solo se registran los metadatos.
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   crear(@Body() createGaleriaDto: CreateGaleriaDto) {
     return this.galeriaService.crear(createGaleriaDto);
@@ -70,7 +75,8 @@ export class GaleriaController {
     return this.galeriaService.obtenerUno(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
   actualizar(
     @Param('id', ParseIntPipe) id: number,
@@ -79,7 +85,8 @@ export class GaleriaController {
     return this.galeriaService.actualizar(id, updateGaleriaDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   eliminar(@Param('id', ParseIntPipe) id: number) {
     return this.galeriaService.eliminar(id);

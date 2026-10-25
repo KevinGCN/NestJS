@@ -21,7 +21,8 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { CambiarRolDto } from './dto/cambiar-rol.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { Roles, RolesGuard } from '../auth/roles.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 
 /** Usuario que deja JwtStrategy en `request.user`. */
@@ -32,7 +33,8 @@ type SesionUsuario = { id: number; rol: string };
  * Regla de oro: ninguna respuesta puede llevar `password_hash`. Eso NO se
  * resuelve aquí sino en `UsuariosService` (selects seguros), así que cualquier
  * método nuevo debe pasar por el servicio en lugar de consultar Prisma directo.
- * Lecturas públicas, escrituras con JWT y el rol exclusivo de admin.
+ * El registro es público; leer/modificar exige JWT (cada uno su perfil, el admin
+ * cualquiera) y el rol es exclusivo de admin.
  */
 @Controller('usuarios')
 export class UsuariosController {
@@ -41,22 +43,34 @@ export class UsuariosController {
     private readonly imagenesService: ImagenesService,
   ) {}
 
-  // Registro de usuarios: público a propósito.
+  // Registro de usuarios: público a propósito (es el alta desde el sitio).
   @Post()
   crear(@Body() createUsuarioDto: CreateUsuarioDto) {
     return this.usuariosService.crear(createUsuarioDto);
   }
 
-  // Consulta pública (sin JWT). Es segura porque el servicio proyecta un select
-  // explícito: si algún día se añade una columna sensible, hay que decidir a
-  // mano si se publica, nunca se filtra por defecto.
+  // Listar usuarios es solo de admin: la pantalla que lo usa es el panel de
+  // trabajadores (promover a tatuador), no una vista pública.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get()
   obtenerTodos() {
     return this.usuariosService.obtenerTodos();
   }
 
+  // Cada usuario puede ver su propio perfil; el admin, cualquiera.
+  // Es segura porque el servicio proyecta un select explícito: si algún día se
+  // añade una columna sensible, hay que decidir a mano si se publica.
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  obtenerUno(@Param('id', ParseIntPipe) id: number) {
+  obtenerUno(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: any,
+  ) {
+    if (req.user.id !== id && req.user.rol !== 'admin') {
+      throw new ForbiddenException('No tienes permiso para consultar este usuario');
+    }
+
     return this.usuariosService.obtenerUno(id);
   }
 
@@ -69,7 +83,12 @@ export class UsuariosController {
   actualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
+    @Req() req: any,
   ) {
+    if (req.user.id !== id && req.user.rol !== 'admin') {
+      throw new ForbiddenException('No tienes permiso para modificar este usuario');
+    }
+
     return this.usuariosService.actualizar(id, updateUsuarioDto);
   }
 
@@ -115,10 +134,11 @@ export class UsuariosController {
     return this.usuariosService.cambiarRol(id, cambiarRolDto.rol);
   }
 
-  // Al borrar el usuario también se borra su foto (ImagenesService). Los tokens
-  // emitidos antes del DELETE dejan de servir: JwtStrategy revalida que el
-  // usuario exista y responde 401 "Sesión inválida".
-  @UseGuards(JwtAuthGuard)
+  // Borrar es solo de admin. Al borrar el usuario también se borra su foto
+  // (ImagenesService). Los tokens emitidos antes del DELETE dejan de servir:
+  // JwtStrategy revalida que el usuario exista y responde 401 "Sesión inválida".
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   eliminar(@Param('id', ParseIntPipe) id: number) {
     return this.usuariosService.eliminar(id);
