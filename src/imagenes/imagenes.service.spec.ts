@@ -30,6 +30,16 @@ function archivoFalso(
   };
 }
 
+/**
+ * Primeros argumentos con los que se llamó a un mock. `jest.Mock` los tipa como
+ * `any`, así que el tipo concreto se pide en el punto de uso para no perder el
+ * chequeo (ni disparar `no-unsafe-member-access`).
+ */
+function argsDe<T>(mock: jest.Mock): T {
+  const llamadas = mock.mock.calls as unknown[][];
+  return llamadas[0][0] as T;
+}
+
 describe('ImagenesService', () => {
   let service: ImagenesService;
   let prisma: {
@@ -55,7 +65,10 @@ describe('ImagenesService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ImagenesService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        ImagenesService,
+        { provide: PrismaService, useValue: prisma },
+      ],
     }).compile();
 
     service = module.get<ImagenesService>(ImagenesService);
@@ -100,7 +113,9 @@ describe('ImagenesService', () => {
 
     it('rechaza un archivo vacío', async () => {
       await expect(
-        service.guardar(archivoFalso('vacia.jpg', 'image/jpeg', Buffer.alloc(0))),
+        service.guardar(
+          archivoFalso('vacia.jpg', 'image/jpeg', Buffer.alloc(0)),
+        ),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
@@ -108,7 +123,45 @@ describe('ImagenesService', () => {
   describe('obtener', () => {
     it('lanza NotFoundException si la imagen no existe', async () => {
       prisma.imagenes.findUnique.mockResolvedValue(null);
-      await expect(service.obtener(99)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.obtener(99)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('eliminar', () => {
+    it('devuelve solo metadatos (nunca el binario `data`)', async () => {
+      prisma.imagenes.findUnique.mockResolvedValue({
+        id: 7,
+        data: Buffer.from('x'),
+      });
+      prisma.imagenes.delete.mockResolvedValue({
+        id: 7,
+        nombre: 'foto.jpg',
+        mime_type: 'image/jpeg',
+        tamano: 4,
+        fecha_subida: new Date('2026-10-21'),
+      });
+
+      const resultado = await service.eliminar(7);
+
+      const args = argsDe<{
+        where: { id: number };
+        select?: Record<string, unknown>;
+      }>(prisma.imagenes.delete);
+      expect(args.where).toEqual({ id: 7 });
+      expect(args.select).toEqual(
+        expect.objectContaining({ id: true, nombre: true }),
+      );
+      expect(resultado).not.toHaveProperty('data');
+    });
+
+    it('responde 404 si la imagen no existe', async () => {
+      prisma.imagenes.findUnique.mockResolvedValue(null);
+      await expect(service.eliminar(99)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(prisma.imagenes.delete).not.toHaveBeenCalled();
     });
   });
 
@@ -123,7 +176,9 @@ describe('ImagenesService', () => {
     });
 
     it('no toca la BD si la URL es externa', async () => {
-      const borrado = await service.eliminarPorUrl('https://ejemplo.com/foto.jpg');
+      const borrado = await service.eliminarPorUrl(
+        'https://ejemplo.com/foto.jpg',
+      );
 
       expect(borrado).toBe(false);
       expect(prisma.imagenes.deleteMany).not.toHaveBeenCalled();

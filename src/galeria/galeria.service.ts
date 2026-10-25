@@ -11,7 +11,9 @@ import { CreateGaleriaDto } from './dto/create-galeria.dto';
 import { UpdateGaleriaDto } from './dto/update-galeria.dto';
 
 // Solo campos públicos del usuario: nunca password_hash, email ni teléfono.
-const usuarioSeguro = { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } } as const;
+const usuarioSeguro = {
+  select: { id: true, nombre: true, apellido: true, foto_perfil_url: true },
+} as const;
 
 const relaciones = {
   usuarios: usuarioSeguro,
@@ -26,10 +28,37 @@ export class GaleriaService {
     private readonly imagenesService: ImagenesService,
   ) {}
 
-  // Solo se insertan metadatos: aquí NO se valida que `subido_por` o
-  // `empleado_id` existan, eso lo impone la FK de Postgres (un id inventado
-  // termina en error de FK, no en un 404 explicativo).
+  // Comprueba las FK antes de escribir para responder 404 con un mensaje útil.
+  // Si se deja a Postgres, un id inventado termina en error de FK (P2003) que
+  // Nest devuelve como 500 opaco.
+  private async verificarRelaciones(subido_por: number, empleado_id?: number) {
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: subido_por },
+    });
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${subido_por} no encontrado`);
+    }
+
+    if (empleado_id !== undefined) {
+      const empleado = await this.prisma.empleados.findUnique({
+        where: { id: empleado_id },
+      });
+      if (!empleado) {
+        throw new NotFoundException(
+          `Empleado con ID ${empleado_id} no encontrado`,
+        );
+      }
+    }
+  }
+
+  // Solo se insertan metadatos: aquí NO se sube ningún archivo. Las FK se
+  // validan a mano (arriba) para que un id inexistente sea 404.
   async crear(createGaleriaDto: CreateGaleriaDto) {
+    await this.verificarRelaciones(
+      createGaleriaDto.subido_por,
+      createGaleriaDto.empleado_id,
+    );
+
     return this.prisma.galeria.create({
       data: {
         subido_por: createGaleriaDto.subido_por,
@@ -65,7 +94,19 @@ export class GaleriaService {
   }
 
   async actualizar(id: number, updateGaleriaDto: UpdateGaleriaDto) {
-    await this.obtenerUno(id);
+    const tatuaje = await this.obtenerUno(id);
+
+    // Solo se consultan las FK si el PATCH toca alguna de las dos; si no, el
+    // valor que completa el par ya estaba validado al crear la fila.
+    if (
+      updateGaleriaDto.subido_por !== undefined ||
+      updateGaleriaDto.empleado_id !== undefined
+    ) {
+      await this.verificarRelaciones(
+        updateGaleriaDto.subido_por ?? tatuaje.subido_por,
+        updateGaleriaDto.empleado_id ?? tatuaje.empleado_id ?? undefined,
+      );
+    }
 
     return this.prisma.galeria.update({
       where: { id },

@@ -4,7 +4,11 @@
  * el nivel de permiso es otra cosa (`usuarios.rol`), así que este servicio no
  * toca los roles: eso es exclusivo de `UsuariosService.cambiarRol`.
  */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
@@ -12,7 +16,9 @@ import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 // Solo campos públicos del usuario: nunca password_hash, email ni teléfono.
 // Es un `select` explícito a propósito: así una columna nueva de `usuarios` NO
 // se publica sola; hay que añadirla aquí a mano si de verdad es pública.
-const usuarioSeguro = { select: { id: true, nombre: true, apellido: true, foto_perfil_url: true } } as const;
+const usuarioSeguro = {
+  select: { id: true, nombre: true, apellido: true, foto_perfil_url: true },
+} as const;
 
 /**
  * CRUD del catálogo de tatuadores. No valida roles ni permisos: eso vive en
@@ -23,20 +29,40 @@ export class EmpleadosService {
   constructor(private readonly prisma: PrismaService) {}
 
   // `usuario_id` es @unique en la BD: un usuario solo puede tener una fila de
-  // empleado y un segundo intento falla con P2002 (500). Ojo: este método NO
-  // cambia el rol; para ser tatuador de verdad hacen falta la fila Y el rol.
+  // empleado. El duplicado (P2002) se traduce a 409 y un usuario inexistente a
+  // 404, en vez de dejar que Postgres reviente con un 500 opaco.
+  // Ojo: este método NO cambia el rol; para ser tatuador de verdad hacen falta
+  // la fila Y el rol.
   async crear(createEmpleadoDto: CreateEmpleadoDto) {
-    return this.prisma.empleados.create({
-      data: {
-        usuario_id: createEmpleadoDto.usuario_id,
-        especialidad: createEmpleadoDto.especialidad,
-        biografia: createEmpleadoDto.biografia,
-        activo: createEmpleadoDto.activo ?? true,
-      },
-      include: {
-        usuarios: usuarioSeguro,
-      },
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: createEmpleadoDto.usuario_id },
     });
+    if (!usuario) {
+      throw new NotFoundException(
+        `Usuario con ID ${createEmpleadoDto.usuario_id} no encontrado`,
+      );
+    }
+
+    try {
+      return await this.prisma.empleados.create({
+        data: {
+          usuario_id: createEmpleadoDto.usuario_id,
+          especialidad: createEmpleadoDto.especialidad,
+          biografia: createEmpleadoDto.biografia,
+          activo: createEmpleadoDto.activo ?? true,
+        },
+        include: {
+          usuarios: usuarioSeguro,
+        },
+      });
+    } catch (e) {
+      if ((e as { code?: string })?.code === 'P2002') {
+        throw new ConflictException(
+          `El usuario ${createEmpleadoDto.usuario_id} ya tiene ficha de tatuador`,
+        );
+      }
+      throw e;
+    }
   }
 
   async obtenerTodos() {
@@ -79,13 +105,23 @@ export class EmpleadosService {
 
   // Borra la fila del catálogo, NO el usuario. Las FK de `citas` y
   // `horarios_trabajador` son obligatorias (Restrict), así que si el tatuador
-  // ya tiene agenda esto falla con error de FK: para retirarlo sin perder
-  // historial hay que usar PATCH con `activo: false`.
+  // ya tiene agenda esto falla con error de FK (P2003): se traduce a 409 con la
+  // alternativa correcta (`activo: false`), que retira del catálogo sin perder
+  // el historial.
   async eliminar(id: number) {
     await this.obtenerUno(id);
 
-    return this.prisma.empleados.delete({
-      where: { id },
-    });
+    try {
+      return await this.prisma.empleados.delete({
+        where: { id },
+      });
+    } catch (e) {
+      if ((e as { code?: string })?.code === 'P2003') {
+        throw new ConflictException(
+          'El tatuador tiene citas u horarios asociados: desactívalo con "activo: false" en vez de borrarlo',
+        );
+      }
+      throw e;
+    }
   }
 }

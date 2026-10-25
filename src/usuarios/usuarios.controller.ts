@@ -24,9 +24,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { IMAGEN_MAX_BYTES } from '../common/imagenes';
-
-/** Usuario que deja JwtStrategy en `request.user`. */
-type SesionUsuario = { id: number; rol: string };
+import { SesionUsuario } from '../common/sesion';
 
 /**
  * Endpoints REST de usuarios (`/api/usuarios`).
@@ -65,10 +63,12 @@ export class UsuariosController {
   @Get(':id')
   obtenerUno(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
+    @Req() req: { user: SesionUsuario },
   ) {
     if (req.user.id !== id && req.user.rol !== 'admin') {
-      throw new ForbiddenException('No tienes permiso para consultar este usuario');
+      throw new ForbiddenException(
+        'No tienes permiso para consultar este usuario',
+      );
     }
 
     return this.usuariosService.obtenerUno(id);
@@ -83,10 +83,12 @@ export class UsuariosController {
   actualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
-    @Req() req: any,
+    @Req() req: { user: SesionUsuario },
   ) {
     if (req.user.id !== id && req.user.rol !== 'admin') {
-      throw new ForbiddenException('No tienes permiso para modificar este usuario');
+      throw new ForbiddenException(
+        'No tienes permiso para modificar este usuario',
+      );
     }
 
     return this.usuariosService.actualizar(id, updateUsuarioDto);

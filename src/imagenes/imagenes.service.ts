@@ -1,6 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { borrarImagen, idDesdeUrlImagen, IMAGENES_URL, IMAGEN_TIPOS } from '../common/imagenes';
+import {
+  borrarImagen,
+  idDesdeUrlImagen,
+  IMAGENES_URL,
+  IMAGEN_TIPOS,
+} from '../common/imagenes';
 
 export interface ImagenGuardada {
   id: number;
@@ -30,7 +39,9 @@ export class ImagenesService {
       throw new BadRequestException('El archivo "imagen" está vacío');
     }
     if (!IMAGEN_TIPOS.test(archivo.mimetype)) {
-      throw new BadRequestException('Tipo de imagen no permitido (jpeg, png o webp)');
+      throw new BadRequestException(
+        'Tipo de imagen no permitido (jpeg, png o webp)',
+      );
     }
 
     const nombre = this.nombreLimpio(archivo.originalname, archivo.mimetype);
@@ -75,12 +86,23 @@ export class ImagenesService {
     });
   }
 
-  /** Elimina la imagen de la BD. */
+  /** Elimina la imagen de la BD (devuelve solo metadatos, nunca el binario). */
   async eliminar(id: number) {
     // Se comprueba primero la existencia para responder 404 en vez de dejar
     // que Prisma falle con su error interno (P2025) al no encontrar la fila.
     await this.obtener(id);
-    return this.prisma.imagenes.delete({ where: { id } });
+    return this.prisma.imagenes.delete({
+      where: { id },
+      // `select` explícito: sin él, Prisma devolvería también `data` (el
+      // binario completo) en el body del DELETE, una respuesta enorme e inútil.
+      select: {
+        id: true,
+        nombre: true,
+        mime_type: true,
+        tamano: true,
+        fecha_subida: true,
+      },
+    });
   }
 
   async obtener(id: number) {
@@ -113,8 +135,16 @@ export class ImagenesService {
   }
 
   /** Nombre original saneado (sin rutas ni caracteres raros). */
-  private nombreLimpio(originalname: string | undefined, mimetype: string): string {
-    const extension = mimetype === 'image/png' ? '.png' : mimetype === 'image/webp' ? '.webp' : '.jpg';
+  private nombreLimpio(
+    originalname: string | undefined,
+    mimetype: string,
+  ): string {
+    const extension =
+      mimetype === 'image/png'
+        ? '.png'
+        : mimetype === 'image/webp'
+          ? '.webp'
+          : '.jpg';
     // Se descarta cualquier ruta que venga en el nombre original (para no
     // reutilizar nombres de otros directorios), se sanea a [a-z0-9._-] para
     // que sea seguro en la cabecera `Content-Disposition` y en una URL, y se
@@ -124,6 +154,8 @@ export class ImagenesService {
       .pop()!
       .replace(/[^a-zA-Z0-9._-]/g, '_')
       .slice(0, 120);
-    return base.toLowerCase().endsWith(extension) ? base : `${base || 'imagen'}${extension}`;
+    return base.toLowerCase().endsWith(extension)
+      ? base
+      : `${base || 'imagen'}${extension}`;
   }
 }

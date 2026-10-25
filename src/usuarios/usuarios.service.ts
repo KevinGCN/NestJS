@@ -4,7 +4,11 @@
  * el `password_hash` nunca salga del backend: la única lectura que lo pide es
  * `findCredentialsByEmail`, de uso interno de Auth.
  */
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -90,7 +94,7 @@ export class UsuariosService {
   // decide qué se puede tocar: así `rol` y `activo` no pueden colarse aunque
   // alguien manipule el body.
   async actualizar(id: number, datos: UpdateUsuarioDto) {
-    await this.obtenerUno(id);
+    const anterior = await this.obtenerUno(id);
 
     // `password` no es una columna: se transforma en `password_hash` ya cifrado
     // y solo si viene en el body.
@@ -119,11 +123,33 @@ export class UsuariosService {
       data.password_hash = await hashPassword(datos.password);
     }
 
-    return this.prisma.usuarios.update({
-      where: { id },
-      data,
-      select: USUARIO_SELECT,
-    });
+    try {
+      const actualizado = await this.prisma.usuarios.update({
+        where: { id },
+        data,
+        select: USUARIO_SELECT,
+      });
+
+      // Si el PATCH reemplaza la foto de perfil, el binario anterior quedaría
+      // huérfano en `imagenes`: se borra igual que en `POST /:id/foto`.
+      if (
+        datos.foto_perfil_url !== undefined &&
+        anterior.foto_perfil_url !== actualizado.foto_perfil_url
+      ) {
+        await this.imagenesService.eliminarPorUrl(anterior.foto_perfil_url);
+      }
+
+      return actualizado;
+    } catch (e) {
+      // Igual que en `crear`: el email es @unique, así que un PATCH con un
+      // correo ya usado debe responder 409 y no un 500 de Prisma.
+      if ((e as { code?: string })?.code === 'P2002') {
+        throw new ConflictException(
+          `El correo ${datos.email} ya está registrado`,
+        );
+      }
+      throw e;
+    }
   }
 
   // Cambiar el rol de un usuario (solo admin - lo restringe RolesGuard).
@@ -169,10 +195,22 @@ export class UsuariosService {
   async eliminar(id: number) {
     const usuario = await this.obtenerUno(id);
 
-    const eliminado = await this.prisma.usuarios.delete({
-      where: { id },
-      select: USUARIO_SELECT,
-    });
+    // `galeria.subido_por` es una FK obligatoria sin cascada: si el usuario
+    // subió fotos, Postgres bloquea el borrado (P2003) y Nest respondería 500.
+    // Se traduce a 409 para que el panel explique qué hay que hacer antes.
+    const eliminado = await this.prisma.usuarios
+      .delete({
+        where: { id },
+        select: USUARIO_SELECT,
+      })
+      .catch((e: unknown) => {
+        if ((e as { code?: string })?.code === 'P2003') {
+          throw new ConflictException(
+            'El usuario tiene imágenes publicadas en la galería: bórralas o reasígnalas antes de eliminar la cuenta',
+          );
+        }
+        throw e;
+      });
 
     // La foto de perfil es una imagen en la BD: se borra para no dejar
     // binarios huérfanos.
