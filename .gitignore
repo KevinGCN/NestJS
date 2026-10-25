@@ -37,8 +37,9 @@ lerna-debug.log*
 
 # Skills: la unica copia versionada vive en .agents/skills.
 # Las demas carpetas de agentes (.claude, .github, .cursor, .windsurf, .devin)
-# son junctions locales que crea `npx skills add`; versionarlas duplicaba los
+# son copias locales que crea `npx skills add`; versionarlas duplicaba los
 # mismos archivos en cada carpeta y cada actualizacion tocaba todas las copias.
+# Nunca las conviertas en junctions: git borraria el destino al hacer checkout.
 .claude/skills/
 .github/skills/
 .cursor/skills/
