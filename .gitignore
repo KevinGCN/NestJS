@@ -65,4 +65,12 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-/src/generated/prisma/
+# Imagenes legacy en disco. Ya no se escriben: los binarios viven en la BD
+# (proyecto7.imagenes) y `uploads/` solo se sirve por compatibilidad.
+/uploads/
+
+# El cliente de Prisma de src/generated/prisma SI se versiona (ver AGENTS.md):
+# el build de Railway lo regenera, pero tenerlo commiteado deja el deploy en pie
+# aunque `prisma generate` falle. NO lo añadas aqui: si se ignora, `git add` se
+# salta en silencio los archivos NUEVOS que genere un cambio de schema y el
+# build revienta con un "Cannot find module" dificil de leer.
