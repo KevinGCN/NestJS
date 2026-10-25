@@ -1,3 +1,20 @@
+# Todo el repo se guarda y se sirve en LF, también en Windows.
+# Sin esto, `core.autocrlf=true` escribe CRLF en el disco mientras el índice
+# guarda LF: eslint/prettier (endOfLine) ven el archivo "modificado" en cada
+# línea, `npm run lint --fix` reescribe medio proyecto y los diffs salen
+# gigantes sin cambios reales.
+* text=auto eol=lf
+
+# Binarios: nunca normalizar.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+
 # Los archivos de migracion de Prisma deben SIEMPRE quedar con LF.
 # El checksum que Prisma guarda en `proyecto7._prisma_migrations` es el
 # sha256 del contenido con LF; si git los convierte a CRLF (core.autocrlf),
