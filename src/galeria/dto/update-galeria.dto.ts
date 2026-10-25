@@ -1,4 +1,5 @@
-import { IsInt, IsOptional, IsString, Min, IsUrl } from 'class-validator';
+import { IsInt, IsOptional, IsString, Matches, Min } from 'class-validator';
+import { IMAGEN_MENSAJE, IMAGEN_REGEX } from './create-galeria.dto';
 
 export class UpdateGaleriaDto {
   @IsOptional()
@@ -12,7 +13,8 @@ export class UpdateGaleriaDto {
   empleado_id?: number;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  @Matches(IMAGEN_REGEX, { message: IMAGEN_MENSAJE })
   imagen_url?: string;
 
   @IsOptional()

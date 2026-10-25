@@ -1,4 +1,9 @@
-import { IsInt, IsOptional, IsString, Min, IsUrl } from 'class-validator';
+import { IsInt, IsOptional, IsString, Matches, Min } from 'class-validator';
+
+// Acepta URLs http(s), imágenes subidas (/files/...) e imágenes incluidas en el frontend (image/...).
+export const IMAGEN_REGEX = /^(https?:\/\/|\/files\/|image\/).+$/;
+export const IMAGEN_MENSAJE =
+  'imagen_url debe ser una URL http(s) o una ruta /files/... o image/...';
 
 export class CreateGaleriaDto {
   @IsInt()
@@ -11,7 +16,7 @@ export class CreateGaleriaDto {
   empleado_id?: number;
 
   @IsString()
-  @IsUrl()
+  @Matches(IMAGEN_REGEX, { message: IMAGEN_MENSAJE })
   imagen_url: string;
 
   @IsOptional()
