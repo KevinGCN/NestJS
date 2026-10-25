@@ -1,3 +1,10 @@
+/**
+ * Pruebas de `IsImagenUrl`.
+ *
+ * Cubren las tres formas aceptadas (ruta del backend, URL absoluta y ruta
+ * legacy) y los casos que deben rechazarse: rutas relativas arbitrarias,
+ * esquemas peligrosos (`javascript:`) y cadena vacía.
+ */
 import { validate } from 'class-validator';
 import { IsImagenUrl } from './validadores';
 
@@ -6,6 +13,7 @@ class DtoPrueba {
   imagen_url: string;
 }
 
+/** Devuelve los nombres de los campos con error (lista vacía = válido). */
 async function validar(valor: string): Promise<string[]> {
   const dto = new DtoPrueba();
   dto.imagen_url = valor;

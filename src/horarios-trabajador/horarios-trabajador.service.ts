@@ -1,3 +1,10 @@
+/**
+ * Horarios semanales de los tatuadores.
+ * Fechas y horas pasan por `aMinutos`/`horaADate` de `common/fechas.ts`: las
+ * columnas son `@db.Time` y `horaADate` fija el día 1970-01-01 en UTC, de modo
+ * que la hora se guarda tal cual sin depender de la zona del servidor
+ * (`APP_TIMEZONE`, por defecto America/Bogota).
+ */
 import {
   BadRequestException,
   ConflictException,
@@ -16,10 +23,13 @@ const relaciones = {
   empleados: { include: { usuarios: usuarioSeguro } },
 } as const;
 
+/** Valida franjas semanales; solo detecta el duplicado exacto, no solapamientos. */
 @Injectable()
 export class HorariosTrabajadorService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Compara en minutos ("9:00" > "10:00" en orden alfabético) y también rechaza
+  // inicio == fin: una franja de duración cero no sirve para agendar.
   private validarHoras(hora_inicio: string, hora_fin: string) {
     if (aMinutos(hora_fin) <= aMinutos(hora_inicio)) {
       throw new BadRequestException('hora_fin debe ser posterior a hora_inicio');
@@ -27,6 +37,8 @@ export class HorariosTrabajadorService {
   }
 
   // Traduce los errores de unicidad de Postgres a 409.
+  // El índice único es (empleado_id, dia_semana, hora_inicio): corta el duplicado
+  // exacto, pero NO detecta dos franjas solapadas del mismo día. Ese caso pasa.
   private manejarErrorPrisma(e: unknown) {
     if ((e as { code?: string })?.code === 'P2002') {
       throw new ConflictException(
@@ -36,6 +48,8 @@ export class HorariosTrabajadorService {
     throw e;
   }
 
+  // Se comprueba el empleado antes de insertar para responder 404 con mensaje
+  // claro; si no, la FK de Postgres daría un 500 opaco.
   async crear(createHorarioDto: CreateHorarioDto) {
     this.validarHoras(createHorarioDto.hora_inicio, createHorarioDto.hora_fin);
 
@@ -88,6 +102,9 @@ export class HorariosTrabajadorService {
   async actualizar(id: number, updateHorarioDto: UpdateHorarioDto) {
     const horario = await this.obtenerUno(id);
 
+    // Se completa cada campo con lo que ya estaba guardado: así se puede
+    // revalidar el rango completo aunque el PATCH mande solo una de las horas
+    // (validar únicamente lo enviado dejaría pasar combinaciones imposibles).
     const empleado_id =
       updateHorarioDto.empleado_id ?? horario.empleado_id;
     const dia_semana = updateHorarioDto.dia_semana ?? horario.dia_semana;

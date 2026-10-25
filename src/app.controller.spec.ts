@@ -1,3 +1,10 @@
+/**
+ * Test unitario de `AppController`.
+ *
+ * No levanta HTTP ni Postgres: se construye el módulo de testing con `AppService`
+ * real y un `PrismaService` falso, para poder probar también el healthcheck.
+ */
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -28,6 +35,8 @@ describe('AppController', () => {
     });
   });
 
+  // El mock de `$queryRaw` resuelve, así que el controlador no debe lanzar
+  // ServiceUnavailableException y devuelve el objeto de estado.
   describe('health', () => {
     it('responde ok cuando la base de datos contesta', async () => {
       const respuesta = await appController.health();

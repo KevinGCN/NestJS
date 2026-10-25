@@ -1,3 +1,11 @@
+/**
+ * CRUD REST de ejemplo bajo /api/projects.
+ *
+ * Estructura típica de Nest: el controlador solo traduce HTTP → llamada al
+ * servicio; toda la lógica (aquí, de mentira) vive en `ProjectsService`.
+ * No lleva guards porque es código de plantilla sin datos reales.
+ */
+
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -17,6 +25,8 @@ export class ProjectsController {
     return this.projectsService.findAll();
   }
 
+  // `:id` llega como string en la URL; el servicio recibe number, de ahí el `+id`
+  // (el ValidationPipe no convierte @Param si no hay DTO/ParseIntPipe).
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.projectsService.findOne(+id);

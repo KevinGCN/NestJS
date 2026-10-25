@@ -1,3 +1,11 @@
+/**
+ * Verifica credenciales y firma el JWT.
+ *
+ * El token solo lleva `sub` (id del usuario) porque el resto del perfil se
+ * relee de la BD en cada request (`JwtStrategy`). Así un cambio de rol o un
+ * borrado de cuenta surte efecto sin esperar a que caduque el token.
+ */
+
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsuariosService } from '../usuarios/usuarios.service';
@@ -11,6 +19,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  /**
+   * `POST /api/auth/login` → `{ access_token, token_type: 'Bearer', expires_in }`.
+   * Mismo error para "email no existe" y "contraseña incorrecta": no se revela
+   * qué parte falló.
+   */
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
@@ -26,6 +39,8 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    // El token expone el id del usuario en `sub` (claim estándar de JWT); es lo
+    // único que JwtStrategy necesita para volver a buscar la cuenta.
     const access_token = await this.jwtService.signAsync({ sub: credenciales.id });
 
     // decode() NO verifica el token: solo lo "lee".

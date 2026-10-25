@@ -15,7 +15,11 @@ import { GoogleGenAI } from '@google/genai';
  */
 @Injectable()
 export class IaService {
+  // Modelo "flash": el análisis es una tarea simple y se prioriza latencia y
+  // costo sobre la calidad de un modelo Pro.
   private readonly modelo = 'gemini-2.5-flash';
+  // Caché del cliente: se reutiliza entre peticiones para no reconstruirlo
+  // (y no revalidar la clave) en cada llamada.
   private cliente?: GoogleGenAI;
 
   /**
@@ -24,6 +28,8 @@ export class IaService {
    * justificación).
    */
   async analizarTatuaje(descripcion: string): Promise<string> {
+    // El prompt insiste en "solo JSON" porque el frontend hace JSON.parse de
+    // la respuesta: cualquier markdown o texto extra rompería ese parseo.
     const prompt = `
 Actúa como un tatuador profesional colombiano del estudio Ink Creature.
 

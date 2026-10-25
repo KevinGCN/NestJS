@@ -49,6 +49,8 @@ export class ImagenesService {
       nombre: creada.nombre,
       mime_type: creada.mime_type,
       tamano: creada.tamano,
+      // URL relativa a propósito: la fila sigue siendo válida en local, en
+      // Railway o en cualquier otro host (el frontend la resuelve con `urlImagen()`).
       url: `${IMAGENES_URL}/${creada.id}`,
       fecha_subida: creada.fecha_subida,
     };
@@ -75,6 +77,8 @@ export class ImagenesService {
 
   /** Elimina la imagen de la BD. */
   async eliminar(id: number) {
+    // Se comprueba primero la existencia para responder 404 en vez de dejar
+    // que Prisma falle con su error interno (P2025) al no encontrar la fila.
     await this.obtener(id);
     return this.prisma.imagenes.delete({ where: { id } });
   }
@@ -111,6 +115,10 @@ export class ImagenesService {
   /** Nombre original saneado (sin rutas ni caracteres raros). */
   private nombreLimpio(originalname: string | undefined, mimetype: string): string {
     const extension = mimetype === 'image/png' ? '.png' : mimetype === 'image/webp' ? '.webp' : '.jpg';
+    // Se descarta cualquier ruta que venga en el nombre original (para no
+    // reutilizar nombres de otros directorios), se sanea a [a-z0-9._-] para
+    // que sea seguro en la cabecera `Content-Disposition` y en una URL, y se
+    // recorta a 120 caracteres.
     const base = (originalname ?? '')
       .split(/[\\/]/)
       .pop()!

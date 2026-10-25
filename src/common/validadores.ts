@@ -11,6 +11,9 @@ import {
  *  - del backend: /api/imagenes/<id>   (imagen guardada en la base de datos)
  *  - legacy:     /uploads/<archivo>   (archivos antiguos en disco)
  */
+// Patrón anclado (^...$) a propósito: sin los anclajes, cualquier cadena que
+// llevara un enlace dentro pasaría, y esquemas peligrosos como `javascript:`
+// se colarían hasta el `src` de un <img>.
 const PATRON_IMAGEN =
   /^(https?:\/\/[^\s]+|\/api\/imagenes\/\d+|\/uploads\/[A-Za-z0-9._-]+)$/;
 

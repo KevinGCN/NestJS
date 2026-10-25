@@ -20,6 +20,14 @@ import { UpdateGaleriaDto } from './dto/update-galeria.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 
+/**
+ * Endpoints REST de la galería (`/api/galeria`).
+ * Subir una foto son DOS pasos: primero `POST /upload` guarda el binario en la
+ * BD y devuelve `{ url: "/api/imagenes/<id>" }`; después `POST /api/galeria`
+ * registra los metadatos con esa url. Así la fila de `galeria` solo guarda una
+ * ruta relativa, que sigue siendo válida en cualquier host.
+ * Consultar es público; escribir exige JWT.
+ */
 @Controller('galeria')
 export class GaleriaController {
   constructor(
@@ -44,6 +52,8 @@ export class GaleriaController {
   }
 
   // Crear/Modificar/Borrar imágenes exige sesión (JWT); consultar es público.
+  // `imagen_url` debe ser la ruta que devolvió /upload (IsImagenUrl la valida),
+  // no un archivo: aquí no se sube nada, solo se registran los metadatos.
   @UseGuards(JwtAuthGuard)
   @Post()
   crear(@Body() createGaleriaDto: CreateGaleriaDto) {

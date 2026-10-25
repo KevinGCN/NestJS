@@ -1,3 +1,11 @@
+/**
+ * Punto de entrada del API (NestJS 11).
+ *
+ * Arranca la aplicación Express que sirve `AppModule` en el puerto que asigne
+ * Railway (o 3000 en local) y fija las tres decisiones globales que afectan a
+ * TODAS las rutas: el prefijo `/api`, el `ValidationPipe` y el CORS.
+ */
+
 import 'dotenv/config';
 // ^ DEBE ser el primer import: si va después, los `import` de TS se "elevan"
 //   y app.module (AuthModule → auth.config.ts) leería process.env ANTES de
@@ -12,6 +20,9 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Todas las rutas del API viven bajo /api (p. ej. /api/health, /api/auth/login).
+  // El frontend define esa misma base en `environment.apiUrl`, así que no hay
+  // ruta pública sin prefijo excepto las imágenes legacy de /uploads.
   app.setGlobalPrefix('api');
 
   // CORS: el frontend de desarrollo (ng serve en localhost:4200) y el
@@ -32,6 +43,11 @@ async function bootstrap() {
 
   app.enableCors({ origin: origenes });
 
+  // ValidationPipe global sobre los DTO:
+  // - whitelist: descarta cualquier propiedad que no esté declarada en el DTO
+  //   (evita que un cliente cuele campos como `rol` al actualizar un usuario).
+  // - transform: convierte el cuerpo/params al tipo del DTO (p. ej. strings
+  //   numéricos de la URL → number) y aplica las conversiones de class-transformer.
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -44,6 +60,8 @@ async function bootstrap() {
   // solo por compatibilidad con imagenes legacy que quedaran en /uploads/.
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
+  // Railway inyecta PORT en el contenedor; el 3000 es solo el valor de respaldo
+  // para desarrollo local (`npm run start:dev`).
   await app.listen(process.env.PORT ?? 3000);
 }
 

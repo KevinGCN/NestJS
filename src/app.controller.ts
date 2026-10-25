@@ -1,3 +1,10 @@
+/**
+ * Controlador raíz: `GET /api` (saludo) y `GET /api/health` (healthcheck).
+ *
+ * `@Controller()` sin argumento no aporta segmento a la ruta; el prefijo `/api`
+ * lo pone `main.ts` con `setGlobalPrefix`.
+ */
+
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
@@ -6,6 +13,8 @@ import { PrismaService } from './prisma/prisma.service';
 export class AppController {
   constructor(
     private readonly appService: AppService,
+    // Se inyecta el cliente Prisma a propósito: el healthcheck necesita
+    // comprobar la conexión real a Postgres, no solo que el proceso viva.
     private readonly prisma: PrismaService,
   ) {}
 
@@ -30,8 +39,12 @@ export class AppController {
     };
 
     try {
+      // `SELECT 1` es la consulta más barata que obliga a Postgres a responder:
+      // si el pool de `pg` está caído o el host no contesta, esto lanza.
       await this.prisma.$queryRaw`SELECT 1`;
     } catch (error) {
+      // 503 (no 500) para que Railway/monitores distingan "el API está vivo
+      // pero la dependencia no" de un fallo del propio código.
       throw new ServiceUnavailableException({
         status: 'error',
         baseDeDatos: 'sin respuesta',

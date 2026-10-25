@@ -14,7 +14,11 @@ import { basename, join } from 'node:path';
  * eliminan de la galería.
  */
 export const UPLOADS_DIR = join(process.cwd(), 'uploads');
+// 5 MB: el mismo límite que aplica Multer en el controlador. Corta subidas
+// enormes antes de que ocupen memoria y espacio en la tabla.
 export const IMAGEN_MAX_BYTES = 5 * 1024 * 1024;
+// Solo formatos raster habituales (jpeg, png, webp). Se excluye SVG a
+// propósito: puede llevar scripts y se serviría desde el mismo dominio de la API.
 export const IMAGEN_TIPOS = /^image\/(jpeg|png|webp)$/;
 
 /**
@@ -33,6 +37,11 @@ export function idDesdeUrlImagen(url?: string | null): number | null {
 /**
  * Borra el archivo legacy de una imagen que sigue en `/uploads/`.
  * No hace nada si la URL no corresponde a ese flujo.
+ *
+ * Es limpieza de compatibilidad: hoy los binarios viven en la BD, pero las
+ * filas antiguas apuntan a archivos del disco. Se usa `basename()` para que
+ * la URL no pueda salir del directorio `uploads/`, y el `catch` ignora el
+ * caso de que el archivo ya no exista.
  */
 export async function borrarImagen(url?: string | null) {
   if (!url?.startsWith('/uploads/')) return;

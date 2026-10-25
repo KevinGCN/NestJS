@@ -1,3 +1,10 @@
+/**
+ * Smoke test de `PrismaService`: comprueba que el módulo lo puede instanciar.
+ *
+ * No se llama a `onModuleInit`, así que no se abre conexión real contra
+ * Postgres; solo se valida que el constructor (pool + adapter) no lanza.
+ */
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from './prisma.service';
 

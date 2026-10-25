@@ -1,3 +1,10 @@
+/**
+ * Pruebas de `ImagenesService`.
+ *
+ * Prisma se sustituye por un mock de jest.fn() para no tocar la base real: se
+ * verifica la validación del archivo, la URL relativa que se devuelve y el
+ * borrado por URL (incluido el caso de URLs externas, que no deben tocarse).
+ */
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImagenesService } from './imagenes.service';
@@ -36,6 +43,7 @@ describe('ImagenesService', () => {
   };
 
   beforeEach(async () => {
+    // Mock mínimo: solo los métodos de Prisma que usa el servicio.
     prisma = {
       imagenes: {
         create: jest.fn(),

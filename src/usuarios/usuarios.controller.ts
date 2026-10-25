@@ -27,6 +27,13 @@ import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 /** Usuario que deja JwtStrategy en `request.user`. */
 type SesionUsuario = { id: number; rol: string };
 
+/**
+ * Endpoints REST de usuarios (`/api/usuarios`).
+ * Regla de oro: ninguna respuesta puede llevar `password_hash`. Eso NO se
+ * resuelve aquí sino en `UsuariosService` (selects seguros), así que cualquier
+ * método nuevo debe pasar por el servicio en lugar de consultar Prisma directo.
+ * Lecturas públicas, escrituras con JWT y el rol exclusivo de admin.
+ */
 @Controller('usuarios')
 export class UsuariosController {
   constructor(
@@ -40,6 +47,9 @@ export class UsuariosController {
     return this.usuariosService.crear(createUsuarioDto);
   }
 
+  // Consulta pública (sin JWT). Es segura porque el servicio proyecta un select
+  // explícito: si algún día se añade una columna sensible, hay que decidir a
+  // mano si se publica, nunca se filtra por defecto.
   @Get()
   obtenerTodos() {
     return this.usuariosService.obtenerTodos();
@@ -51,6 +61,9 @@ export class UsuariosController {
   }
 
   // Modificar y borrar usuarios requiere sesión (JWT).
+  // `UpdateUsuarioDto` NO incluye `rol` a propósito: si lo incluyera, cualquier
+  // usuario logueado podría mandar {"rol":"admin"} y auto-promocionarse.
+  // El rol solo se cambia por PATCH /:id/rol (ver más abajo).
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   actualizar(
@@ -102,6 +115,9 @@ export class UsuariosController {
     return this.usuariosService.cambiarRol(id, cambiarRolDto.rol);
   }
 
+  // Al borrar el usuario también se borra su foto (ImagenesService). Los tokens
+  // emitidos antes del DELETE dejan de servir: JwtStrategy revalida que el
+  // usuario exista y responde 401 "Sesión inválida".
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   eliminar(@Param('id', ParseIntPipe) id: number) {

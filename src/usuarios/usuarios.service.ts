@@ -1,4 +1,10 @@
 
+/**
+ * Lógica de negocio de usuarios.
+ * Toda consulta pasa por un select explícito (`usuarioSeguro`) para que el
+ * `password_hash` nunca salga del backend: la única lectura que lo pide es
+ * `findCredentialsByEmail`, de uso interno de Auth.
+ */
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
@@ -21,6 +27,7 @@ const usuarioSeguro = {
   fecha_actualizacion: true,
 } as const;
 
+/** CRUD de usuarios + rol + foto. No decide permisos: eso es de los guards. */
 @Injectable()
 export class UsuariosService {
   constructor(
@@ -81,6 +88,8 @@ export class UsuariosService {
   async actualizar(id: number, datos: UpdateUsuarioDto) {
     await this.obtenerUno(id);
 
+    // `password` se separa del resto porque no es una columna: si viajara en
+    // `...resto`, Prisma fallaría. Solo se guarda ya cifrado en `password_hash`.
     const { password, ...resto } = datos;
 
     return this.prisma.usuarios.update({
@@ -108,6 +117,8 @@ export class UsuariosService {
   }
 
   // Cambiar el rol de un usuario (solo admin - lo restringe RolesGuard).
+  // El valor del rol ya lo valida `CambiarRolDto` (@IsEnum), así que aquí no se
+  // revalida; el permiso es responsabilidad del guard, no del servicio.
   async cambiarRol(id: number, rol: RolUsuario) {
     await this.obtenerUno(id);
 
@@ -160,6 +171,8 @@ export class UsuariosService {
 
   // Consulta interna para Auth: solo obtiene los datos necesarios para validar
   // las credenciales. No debe exponerse como endpoint público.
+  // Es el ÚNICO punto que lee `password_hash` a propósito (lo compara el login);
+  // su resultado nunca debe devolverse tal cual en una respuesta HTTP.
   async findCredentialsByEmail(email: string) {
     return this.prisma.usuarios.findUnique({
       where: { email },

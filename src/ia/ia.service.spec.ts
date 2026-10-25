@@ -1,3 +1,10 @@
+/**
+ * Pruebas de `IaService`.
+ *
+ * Se mockea `@google/genai` para que la suite no llame a la IA real: lo que
+ * se comprueba es el contrato del servicio (503 sin clave, texto devuelto y
+ * que el error de Google no se filtre con la clave dentro del mensaje).
+ */
 import { ServiceUnavailableException } from '@nestjs/common';
 import { IaService } from './ia.service';
 
@@ -16,6 +23,8 @@ describe('IaService', () => {
     jest.clearAllMocks();
   });
 
+  // Se restaura la variable original al final (no en cada test) para no
+  // dejar el entorno del proceso modificado para el resto de la suite.
   afterAll(() => {
     if (original === undefined) {
       delete process.env.GEMINI_API_KEY;

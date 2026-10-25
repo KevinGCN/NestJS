@@ -1,3 +1,10 @@
+/**
+ * DTO del análisis de IA.
+ *
+ * Las validaciones las aplica el `ValidationPipe` global de `main.ts`: una
+ * descripción demasiado corta o demasiado larga se rechaza con 400 antes de
+ * llegar al servicio y, por tanto, antes de gastar una llamada a Gemini.
+ */
 import { IsString, MaxLength, MinLength } from 'class-validator';
 
 export class AnalizarTatuajeDto {
