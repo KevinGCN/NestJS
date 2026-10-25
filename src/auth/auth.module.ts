@@ -26,7 +26,7 @@ import { jwtConfig } from './auth.config';
     JwtModule.register({
       secret: jwtConfig.secret,
       signOptions: {
-        expiresIn: jwtConfig.expiresIn as any,
+        expiresIn: jwtConfig.expiresIn,
         algorithm: 'HS256',
       },
     }),
@@ -36,4 +36,4 @@ import { jwtConfig } from './auth.config';
   // la estrategia llamada 'jwt' (es la que usa JwtAuthGuard).
   providers: [AuthService, JwtStrategy],
 })
-export class AuthModule { }
+export class AuthModule {}

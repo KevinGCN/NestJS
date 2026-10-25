@@ -73,7 +73,7 @@ Grande:
       });
 
       return respuesta.text ?? '{}';
-    } catch (error) {
+    } catch {
       // No se filtra el detalle del error de Google: puede incluir la URL
       // de la API con la clave en los query params.
       throw new InternalServerErrorException(

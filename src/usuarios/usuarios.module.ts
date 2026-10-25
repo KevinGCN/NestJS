@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { ImagenesModule } from '../imagenes/imagenes.module';
 import { UsuariosController } from './usuarios.controller';

@@ -30,23 +30,27 @@ export class RolesGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     // getAllAndOverride: la metadata del handler gana sobre la de la clase, así
     // un controlador puede declarar un rol por defecto y cada ruta afinarlo.
-    const roles = this.reflector.getAllAndOverride<Rol[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const roles = this.reflector.getAllAndOverride<Rol[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     // Si la ruta no define roles, este guard no restringe el acceso.
     if (!roles || roles.length === 0) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const usuario = request.user as { rol?: Rol } | undefined;
+    const request = context.switchToHttp().getRequest<{
+      user?: { rol?: Rol };
+    }>();
+    const usuario = request.user;
 
     // 403 (autenticado pero sin permiso), no 401: el 401 haría que el
     // interceptor del frontend borrase la sesión y mandara a login.
     if (!usuario || !usuario.rol || !roles.includes(usuario.rol)) {
-      throw new ForbiddenException('No tienes permisos para realizar esta operación');
+      throw new ForbiddenException(
+        'No tienes permisos para realizar esta operación',
+      );
     }
 
     return true;

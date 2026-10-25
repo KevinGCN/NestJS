@@ -34,9 +34,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload) {
-    const usuario = await this.usuariosService.obtenerPublicoOrNull(payload.sub);
+    const usuario = await this.usuariosService.obtenerPublicoOrNull(
+      payload.sub,
+    );
 
-      if (!usuario || !usuario.activo) {
+    if (!usuario || !usuario.activo) {
       // La cuenta no existe o está desactivada.
       throw new UnauthorizedException('Sesión inválida');
     }

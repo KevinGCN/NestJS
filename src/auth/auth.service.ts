@@ -27,7 +27,8 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
-    const credenciales = await this.usuariosService.findCredentialsByEmail(email);
+    const credenciales =
+      await this.usuariosService.findCredentialsByEmail(email);
 
     // Si no existe, igual "gastamos" el mismo tiempo comparando contra DUMMY_HASH
     const passwordValida = await verifyPassword(
@@ -35,17 +36,21 @@ export class AuthService {
       credenciales ? credenciales.password_hash : DUMMY_HASH,
     );
 
-        if (!credenciales || !passwordValida || !credenciales.activo) {
+    if (!credenciales || !passwordValida || !credenciales.activo) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
     // El token expone el id del usuario en `sub` (claim estándar de JWT); es lo
     // único que JwtStrategy necesita para volver a buscar la cuenta.
-    const access_token = await this.jwtService.signAsync({ sub: credenciales.id });
+    const access_token = await this.jwtService.signAsync({
+      sub: credenciales.id,
+    });
 
     // decode() NO verifica el token: solo lo "lee".
     // Es seguro aquí porque lo acabamos de firmar nosotros mismos.
-    const payload = this.jwtService.decode(access_token) as { iat: number; exp: number };
+    const payload = this.jwtService.decode<{ iat: number; exp: number }>(
+      access_token,
+    );
 
     return {
       access_token,

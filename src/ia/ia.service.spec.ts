@@ -56,7 +56,9 @@ describe('IaService', () => {
   it('no filtra el detalle del error de Google', async () => {
     process.env.GEMINI_API_KEY = 'clave-de-prueba';
     mockGenerateContent.mockRejectedValue(
-      new Error('request failed for key AQ.secreto: https://generativelanguage.googleapis.com/...?key=AQ.secreto'),
+      new Error(
+        'request failed for key AQ.secreto: https://generativelanguage.googleapis.com/...?key=AQ.secreto',
+      ),
     );
 
     const service = new IaService();

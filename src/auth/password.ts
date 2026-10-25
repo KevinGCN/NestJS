@@ -13,7 +13,11 @@
  */
 
 import { promisify } from 'node:util';
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
+import {
+  randomBytes,
+  scrypt as scryptCallback,
+  timingSafeEqual,
+} from 'node:crypto';
 
 const scrypt = promisify(scryptCallback);
 

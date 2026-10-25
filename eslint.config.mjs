@@ -6,7 +6,9 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    // `src/generated/prisma` lo escribe `prisma generate`: no se formatea ni se
+    // lintea a mano (se regenera en cada build y genera ruido y diffs inútiles).
+    ignores: ['eslint.config.mjs', 'src/generated/prisma/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

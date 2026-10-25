@@ -46,7 +46,8 @@ export const deMinutos = (min: number) =>
 // `toISOString()` devuelve exactamente la misma fecha/hora que se guardó y
 // nunca se desplaza un día por el huso del servidor.
 export const fechaADate = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
-export const horaADate = (hhmm: string) => new Date(`1970-01-01T${hhmm}:00.000Z`);
+export const horaADate = (hhmm: string) =>
+  new Date(`1970-01-01T${hhmm}:00.000Z`);
 export const dateAFecha = (d: Date) => d.toISOString().slice(0, 10);
 export const dateAHora = (d: Date) => d.toISOString().slice(11, 16);
 export const diaSemana = (iso: string) => fechaADate(iso).getUTCDay();

@@ -94,13 +94,11 @@ describe('ImagenesService', () => {
 
       expect(resultado.id).toBe(7);
       expect(resultado.url).toBe('/api/imagenes/7');
-      expect(prisma.imagenes.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            mime_type: 'image/jpeg',
-            tamano: 15,
-          }),
-        }),
+      const args = argsDe<{ data: Record<string, unknown> }>(
+        prisma.imagenes.create,
+      );
+      expect(args.data).toEqual(
+        expect.objectContaining({ mime_type: 'image/jpeg', tamano: 15 }),
       );
     });
 

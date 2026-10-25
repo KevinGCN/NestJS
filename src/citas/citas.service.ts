@@ -198,14 +198,21 @@ export class CitasService {
       );
     }
 
-    const { fecha, hora_inicio: hi, hora_fin: hf, ...resto } = updateCitaDto;
+    // `resto` es el DTO sin los tres campos que se convertirán a Date/Fecha:
+    // si se pasaran crudos, Prisma recibiría un string en una columna de fecha.
+    const resto = { ...updateCitaDto };
+    delete resto.fecha;
+    delete resto.hora_inicio;
+    delete resto.hora_fin;
 
     try {
       return await this.prisma.citas.update({
         where: { id },
         data: {
           ...resto,
-          ...(fecha ? { fecha: fechaADate(fecha) } : {}),
+          ...(updateCitaDto.fecha
+            ? { fecha: fechaADate(updateCitaDto.fecha) }
+            : {}),
           hora_inicio: horaADate(hora_inicio),
           hora_fin: horaADate(hora_fin),
           fecha_actualizacion: new Date(),

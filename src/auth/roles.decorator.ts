@@ -17,5 +17,4 @@ export type Rol = 'cliente' | 'empleado' | 'admin';
  * Declara qué roles pueden ejecutar un handler o un controlador completo.
  * Sin este decorador, `RolesGuard` deja pasar a cualquier usuario autenticado.
  */
-export const Roles = (...roles: Rol[]) =>
-  SetMetadata(ROLES_KEY, roles);
+export const Roles = (...roles: Rol[]) => SetMetadata(ROLES_KEY, roles);

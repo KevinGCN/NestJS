@@ -21,7 +21,9 @@ describe('AppController', () => {
         // El healthcheck consulta la BD: se simula para no tocar Postgres.
         {
           provide: PrismaService,
-          useValue: { $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]) },
+          useValue: {
+            $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
+          },
         },
       ],
     }).compile();

@@ -10,6 +10,7 @@ import { Controller, Post, Get, Body, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { SesionUsuario } from '../common/sesion';
 
 @Controller('auth')
 export class AuthController {
@@ -25,7 +26,7 @@ export class AuthController {
   // `req.user`; sin token (o con uno de una cuenta borrada) responde 401.
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@Req() req: any) {
+  me(@Req() req: { user: SesionUsuario }) {
     return req.user; // lo dejó JwtStrategy.validate()
   }
 }
