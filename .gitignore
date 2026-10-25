@@ -35,6 +35,16 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Skills: la unica copia versionada vive en .agents/skills.
+# Las demas carpetas de agentes (.claude, .github, .cursor, .windsurf, .devin)
+# son junctions locales que crea `npx skills add`; versionarlas duplicaba los
+# mismos archivos en cada carpeta y cada actualizacion tocaba todas las copias.
+.claude/skills/
+.github/skills/
+.cursor/skills/
+.windsurf/skills/
+.devin/skills/
+
 # dotenv environment variable files
 .env
 .env.development.local
