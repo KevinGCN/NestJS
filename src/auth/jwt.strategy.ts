@@ -19,8 +19,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: JwtPayload) {
     const usuario = await this.usuariosService.obtenerPublicoOrNull(payload.sub);
 
-    if (!usuario) {
-      // El token es válido, pero la cuenta ya no existe → tratamos como sesión inválida
+      if (!usuario || !usuario.activo) {
+      // La cuenta no existe o está desactivada.
       throw new UnauthorizedException('Sesión inválida');
     }
 
