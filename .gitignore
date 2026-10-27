@@ -47,11 +47,12 @@ lerna-debug.log*
 .devin/skills/
 
 # dotenv environment variable files
+# `.env.*` cubre todas las variantes: .env.local, .env.production.local y los
+# respaldos manuales (.env.bak-<fecha>). Un respaldo contiene la MISMA
+# DATABASE_URL y el MISMO JWT_SECRET, asi que subirlo equivale a filtrar la clave.
 .env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+.env.*
+!.env.example
 
 # temp directory
 .temp
