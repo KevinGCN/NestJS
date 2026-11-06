@@ -170,7 +170,7 @@ export class UsuariosService {
 
   /**
    * Actualiza la foto de perfil con la ruta de la imagen ya guardada
-   * ("/api/imagenes/<id>") y elimina la imagen anterior para no dejar
+   * ("/imagenes/<id>") y elimina la imagen anterior para no dejar
    * binarios huérfanos en la base de datos.
    */
   async actualizarFoto(id: number, url: string) {

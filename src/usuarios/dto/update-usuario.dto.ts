@@ -7,10 +7,10 @@ import {
 } from 'class-validator';
 
 /**
- * Body de `PATCH /api/usuarios/:id` (actualización parcial: todo opcional).
+ * Body de `PATCH /usuarios/:id` (actualización parcial: todo opcional).
  * Deliberadamente NO incluye `rol` ni `activo`: si incluyera `rol`, cualquier
  * usuario con sesión podría mandar {"rol":"admin"} y auto-promocionarse. El rol
- * solo cambia por `PATCH /api/usuarios/:id/rol` (JwtAuthGuard + RolesGuard con
+ * solo cambia por `PATCH /usuarios/:id/rol` (JwtAuthGuard + RolesGuard con
  * @Roles('admin')).
  */
 export class UpdateUsuarioDto {
@@ -52,8 +52,8 @@ export class UpdateUsuarioDto {
   @IsOptional()
   @IsString()
   /**
-   * Ruta ya guardada de la foto ("/api/imagenes/<id>"). Para subir un archivo
-   * nuevo se usa `POST /api/usuarios/:id/foto`, que además borra la anterior.
+   * Ruta ya guardada de la foto ("/imagenes/<id>"). Para subir un archivo
+   * nuevo se usa `POST /usuarios/:id/foto`, que además borra la anterior.
    */
   foto_perfil_url?: string;
 }

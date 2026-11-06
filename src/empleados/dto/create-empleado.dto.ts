@@ -1,10 +1,10 @@
 import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 /**
- * Body de `POST /api/empleados`: mete a un usuario ya registrado en el catálogo
+ * Body de `POST /empleados`: mete a un usuario ya registrado en el catálogo
  * de tatuadores. No se envía aquí su nombre ni su foto: salen de `usuarios`.
  * Tampoco se envía el rol: la fila solo da visibilidad, el permiso se cambia
- * aparte con `PATCH /api/usuarios/:id/rol`.
+ * aparte con `PATCH /usuarios/:id/rol`.
  */
 export class CreateEmpleadoDto {
   @IsInt()

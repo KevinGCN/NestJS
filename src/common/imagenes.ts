@@ -6,8 +6,12 @@ import { basename, join } from 'node:path';
  *
  * El almacenamiento actual es la BASE DE DATOS (tabla `proyecto7.imagenes`,
  * columna `data` BYTEA): ver el módulo `src/imagenes/`. Las imágenes se
- * sirven con GET /api/imagenes/:id y las URLs guardadas en la BD son
- * relativas ("/api/imagenes/<id>").
+ * sirven con GET /imagenes/:id y las URLs guardadas en la BD son relativas
+ * ("/imagenes/<id>").
+ *
+ * Compatibilidad: las filas creadas antes de quitar el prefijo global guardan
+ * "/api/imagenes/<id>". `idDesdeUrlImagen()` y `IsImagenUrl()` aceptan las dos
+ * formas para no romper esas filas.
  *
  * El flujo legacy (archivos en `uploads/`) ya no escribe nada, pero se
  * mantiene `borrarImagen()` para limpiar imágenes antiguas cuando se
@@ -23,14 +27,18 @@ export const IMAGEN_TIPOS = /^image\/(jpeg|png|webp)$/;
 
 /**
  * Ruta pública (relativa) con la que se sirve una imagen guardada en la BD.
- * Ej: "/api/imagenes/12"  ->  GET /api/imagenes/12
+ * Ej: "/imagenes/12"  ->  GET /imagenes/12
  */
-export const IMAGENES_URL = '/api/imagenes';
+export const IMAGENES_URL = '/imagenes';
 
-/** Extrae el id de una ruta "/api/imagenes/<id>"; null si no corresponde. */
+/**
+ * Extrae el id de una ruta de imagen del backend.
+ * Acepta "/imagenes/<id>" y la forma antigua "/api/imagenes/<id>";
+ * null si no corresponde.
+ */
 export function idDesdeUrlImagen(url?: string | null): number | null {
   if (!url) return null;
-  const m = url.match(/^\/api\/imagenes\/(\d+)$/);
+  const m = url.match(/^\/(?:api\/)?imagenes\/(\d+)$/);
   return m ? Number(m[1]) : null;
 }
 

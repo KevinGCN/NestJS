@@ -18,7 +18,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SesionUsuario } from '../common/sesion';
 
 /**
- * Endpoints REST de citas (`/api/citas`).
+ * Endpoints REST de citas (`/citas`).
  * Leer es público a propósito (el sitio muestra la agenda sin exigir sesión),
  * y eso implica que NO hay autorización por usuario al consultar: los filtros
  * `?usuario_id=` / `?empleado_id=` son comodidad, no control de acceso.

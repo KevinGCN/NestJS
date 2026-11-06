@@ -1,5 +1,5 @@
 /**
- * Controlador raíz: `GET /api` (saludo) y `GET /api/health` (healthcheck).
+ * Controlador raíz: `GET /api` (saludo) y `GET /health` (healthcheck).
  *
  * `@Controller()` sin argumento no aporta segmento a la ruta; el prefijo `/api`
  * lo pone `main.ts` con `setGlobalPrefix`.
@@ -24,7 +24,7 @@ export class AppController {
   }
 
   /**
-   * Healthcheck del despliegue: GET /api/health
+   * Healthcheck del despliegue: GET /health
    *
    * Devuelve 200 si el API responde Y la base de datos de Railway contesta,
    * o 503 si la base de datos no responde. Es la forma más rápida de

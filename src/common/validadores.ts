@@ -8,14 +8,15 @@ import {
 /**
  * URLs de imagen admitidas:
  *  - absoluta:  https://ejemplo.com/foto.jpg
- *  - del backend: /api/imagenes/<id>   (imagen guardada en la base de datos)
- *  - legacy:     /uploads/<archivo>   (archivos antiguos en disco)
+ *  - del backend: /imagenes/<id>       (imagen guardada en la base de datos)
+ *  - legacy BD:   /api/imagenes/<id>   (filas guardadas antes de quitar el prefijo)
+ *  - legacy:      /uploads/<archivo>   (archivos antiguos en disco)
  */
 // Patrón anclado (^...$) a propósito: sin los anclajes, cualquier cadena que
 // llevara un enlace dentro pasaría, y esquemas peligrosos como `javascript:`
 // se colarían hasta el `src` de un <img>.
 const PATRON_IMAGEN =
-  /^(https?:\/\/[^\s]+|\/api\/imagenes\/\d+|\/uploads\/[A-Za-z0-9._-]+)$/;
+  /^(https?:\/\/[^\s]+|\/(?:api\/)?imagenes\/\d+|\/uploads\/[A-Za-z0-9._-]+)$/;
 
 /**
  * Decorador de validación para `imagen_url` (y `foto_perfil_url`).
@@ -37,7 +38,7 @@ export function IsImagenUrl(validationOptions?: ValidationOptions) {
         defaultMessage(args: ValidationArguments): string {
           return buildMessage(
             (eachPrefix) =>
-              `${eachPrefix}$property debe ser una URL válida o una ruta del backend (/api/imagenes/<id>)`,
+              `${eachPrefix}$property debe ser una URL válida o una ruta del backend (/imagenes/<id>)`,
             validationOptions,
           )(args);
         },

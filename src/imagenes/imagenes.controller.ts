@@ -20,10 +20,10 @@ import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 /**
  * Imágenes almacenadas en la base de datos.
  *
- *  POST   /api/imagenes        → sube un archivo (multipart, campo "imagen")
- *  GET    /api/imagenes        → lista metadatos (JWT)
- *  GET    /api/imagenes/:id    → devuelve el binario (público, es la URL de la imagen)
- *  DELETE /api/imagenes/:id    → elimina la imagen (JWT)
+ *  POST   /imagenes        → sube un archivo (multipart, campo "imagen")
+ *  GET    /imagenes        → lista metadatos (JWT)
+ *  GET    /imagenes/:id    → devuelve el binario (público, es la URL de la imagen)
+ *  DELETE /imagenes/:id    → elimina la imagen (JWT)
  */
 @Controller('imagenes')
 export class ImagenesController {

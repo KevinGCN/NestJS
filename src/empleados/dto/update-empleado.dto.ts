@@ -1,7 +1,7 @@
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 /**
- * Body de `PATCH /api/empleados/:id` (todo opcional).
+ * Body de `PATCH /empleados/:id` (todo opcional).
  * A propósito NO incluye `usuario_id`: mover una fila de un usuario a otro
  * rompería el historial del tatuador (citas y galería cuelgan de esta fila).
  * Para "cambiar de tatuador" se borra la fila y se crea otra.

@@ -1,7 +1,7 @@
 /**
  * Galería de tatuajes: metadatos + binario.
  * La fila (`galeria.imagen_url`) guarda una ruta relativa
- * "/api/imagenes/<id>"; el archivo está en `proyecto7.imagenes`. Por eso borrar
+ * "/imagenes/<id>"; el archivo está en `proyecto7.imagenes`. Por eso borrar
  * una entrada tiene que borrar también el binario: si no, quedaría huérfano.
  */
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -124,7 +124,7 @@ export class GaleriaService {
 
     // La imagen vive en la BD (o en el disco con el flujo legacy): hay que
     // borrar el binario para no dejar archivos huérfanos.
-    // `eliminarPorUrl` entiende tanto "/api/imagenes/<id>" como "/uploads/<f>".
+    // `eliminarPorUrl` entiende tanto "/imagenes/<id>" como "/uploads/<f>".
     await this.imagenesService.eliminarPorUrl(tatuaje.imagen_url);
 
     return eliminado;

@@ -10,7 +10,7 @@ import { GoogleGenAI } from '@google/genai';
  *
  * IMPORTANTE: la clave de la API **nunca** sale del backend. Vive solo en
  * la variable de entorno `GEMINI_API_KEY` (en Railway) y el frontend llama
- * a `POST /api/ia/analyze-tattoo`. Si la clave estuviera en el frontend,
+ * a `POST /ia/analyze-tattoo`. Si la clave estuviera en el frontend,
  * cualquiera podría leerla del bundle del navegador.
  */
 @Injectable()

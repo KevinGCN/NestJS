@@ -7,7 +7,7 @@ import { IsEnum } from 'class-validator';
 import { RolUsuario } from '../../generated/prisma/enums';
 
 /**
- * Body del endpoint `PATCH /api/usuarios/:id/rol`.
+ * Body del endpoint `PATCH /usuarios/:id/rol`.
  * Solo un admin puede invocarlo (ver RolesGuard).
  */
 export class CambiarRolDto {
