@@ -26,11 +26,15 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // CORS: el frontend de desarrollo (ng serve en localhost:4200) y los
-  // despliegues de Netlify. `FRONTEND_URL` añade más orígenes sin tocar código
-  // (varios separados por comas, p. ej.
-  // "https://mi-app.netlify.app,https://otro.netlify.app"). En producción SI
-  // hay que definirla: sin ella el navegador recibe "blocked by CORS policy" y
-  // nunca llega a llamar al API.
+  // despliegues de Netlify. La API vive en Render
+  // (https://inkcreature-backend.onrender.com) y la SPA en
+  // https://ink-creature-v2.netlify.app, así que ambos orígenes deben estar
+  // permitidos o el navegador corta la petición con "blocked by CORS policy"
+  // antes de que llegue al backend.
+  //
+  // `FRONTEND_URL` añade más orígenes sin tocar código (varios separados por
+  // comas, p. ej. "https://mi-app.netlify.app,https://otro.netlify.app"). Se
+  // normaliza la barra final porque el navegador envía el `Origin` sin ella.
   const origenes = [
     'http://localhost:4200',
     'https://ink-creature-v2.netlify.app',
@@ -41,12 +45,12 @@ async function bootstrap() {
     origenes.push(
       ...frontends
         .split(',')
-        .map((o) => o.trim())
+        .map((o) => o.trim().replace(/\/+$/, ''))
         .filter(Boolean),
     );
   }
 
-  app.enableCors({ origin: origenes });
+  app.enableCors({ origin: [...new Set(origenes)] });
 
   // ValidationPipe global sobre los DTO:
   // - whitelist: descarta cualquier propiedad que no esté declarada en el DTO

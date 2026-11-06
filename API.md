@@ -3,10 +3,10 @@
 Documentación de **todos los endpoints existentes** en el backend, extraída directamente del código
 (controllers, DTOs y services) el **2026-10-25**.
 
-- **Repo:** `NestJS/` (servicio de Railway)
+- **Repo:** `NestJS/` (API desplegada en **Render**; `railway.json` describe el despliegue equivalente en Railway)
 - **Prefijo global:** todas las rutas viven bajo `/api` (`app.setGlobalPrefix('api')` en `src/main.ts`)
 - **Base local:** `http://localhost:3000/api`
-- **Base producción:** `https://<servicio>.up.railway.app/api`
+- **Base producción:** `https://inkcreature-backend.onrender.com/api`
 - **Total:** **37 endpoints** en 9 controllers (+ 1 servicio estático legacy)
 
 ---
