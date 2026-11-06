@@ -9,6 +9,7 @@
 import { Controller, Post, Get, Body, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { SesionUsuario } from '../common/sesion';
 
@@ -20,6 +21,15 @@ export class AuthController {
   @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  /**
+   * Pública. Recibe el ID token de Firebase (login con Google) y devuelve el
+   * mismo formato que `/auth/login`.
+   */
+  @Post('google')
+  loginConGoogle(@Body() googleLoginDto: GoogleLoginDto) {
+    return this.authService.loginConGoogle(googleLoginDto.idToken);
   }
 
   // El guard exige `Authorization: Bearer <token>` y deja el usuario en

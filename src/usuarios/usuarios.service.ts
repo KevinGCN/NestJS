@@ -13,6 +13,7 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ImagenesService } from '../imagenes/imagenes.service';
+import { randomBytes } from 'node:crypto';
 import { hashPassword } from '../auth/password';
 import { RolUsuario } from '../generated/prisma/enums';
 
@@ -217,6 +218,47 @@ export class UsuariosService {
     await this.imagenesService.eliminarPorUrl(usuario.foto_perfil_url);
 
     return eliminado;
+  }
+
+  // Uso interno de Auth (login con Google): busca por correo y, si no existe,
+  // crea la cuenta como `cliente` con una contraseña aleatoria imposible de
+  // usar en `/auth/login`. Devuelve solo lo que Auth necesita.
+  async buscarOCrearPorEmail(datos: {
+    email: string;
+    nombre: string;
+    apellido: string;
+    foto_perfil_url: string | null;
+  }): Promise<{ id: number; activo: boolean }> {
+    const existente = await this.prisma.usuarios.findUnique({
+      where: { email: datos.email },
+      select: { id: true, activo: true },
+    });
+    if (existente) return existente;
+
+    const password_hash = await hashPassword(randomBytes(32).toString('hex'));
+
+    try {
+      return await this.prisma.usuarios.create({
+        data: {
+          nombre: datos.nombre,
+          apellido: datos.apellido,
+          email: datos.email,
+          password_hash,
+          foto_perfil_url: datos.foto_perfil_url,
+          fecha_actualizacion: new Date(),
+        },
+        select: { id: true, activo: true },
+      });
+    } catch (e) {
+      // Otro login simultáneo pudo crear la misma cuenta.
+      if ((e as { code?: string })?.code === 'P2002') {
+        return this.prisma.usuarios.findUniqueOrThrow({
+          where: { email: datos.email },
+          select: { id: true, activo: true },
+        });
+      }
+      throw e;
+    }
   }
 
   // Consulta interna para Auth: solo obtiene los datos necesarios para validar
