@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 /**
  * Proxy de inteligencia artificial.
  *
- *  POST /api/ia/analyze-tattoo → analiza una descripción de tatuaje (JWT)
+ *  POST /ia/analyze-tattoo → analiza una descripción de tatuaje (JWT)
  *
  * El frontend NO habla directamente con Google: la llave de Gemini se
  * queda en el servidor (`GEMINI_API_KEY`), así que nunca viaja al

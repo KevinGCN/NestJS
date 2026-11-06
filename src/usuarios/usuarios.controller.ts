@@ -27,7 +27,7 @@ import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 import { SesionUsuario } from '../common/sesion';
 
 /**
- * Endpoints REST de usuarios (`/api/usuarios`).
+ * Endpoints REST de usuarios (`/usuarios`).
  * Regla de oro: ninguna respuesta puede llevar `password_hash`. Eso NO se
  * resuelve aquí sino en `UsuariosService` (selects seguros), así que cualquier
  * método nuevo debe pasar por el servicio en lugar de consultar Prisma directo.
@@ -97,7 +97,7 @@ export class UsuariosController {
   /**
    * Subir la foto de perfil (multipart/form-data, campo "imagen").
    * El binario se guarda en la base de datos y `foto_perfil_url` queda con
-   * la ruta "/api/imagenes/<id>". Sólo el propio usuario o un admin pueden.
+   * la ruta "/imagenes/<id>". Sólo el propio usuario o un admin pueden.
    */
   @UseGuards(JwtAuthGuard)
   @Post(':id/foto')

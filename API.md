@@ -4,9 +4,9 @@ Documentación de **todos los endpoints existentes** en el backend, extraída di
 (controllers, DTOs y services) el **2026-10-25**.
 
 - **Repo:** `NestJS/` (API desplegada en **Render**; `railway.json` describe el despliegue equivalente en Railway)
-- **Prefijo global:** todas las rutas viven bajo `/api` (`app.setGlobalPrefix('api')` en `src/main.ts`)
-- **Base local:** `http://localhost:3000/api`
-- **Base producción:** `https://inkcreature-backend.onrender.com/api`
+- **Sin prefijo:** las rutas cuelgan de la raiz (`http://localhost:3000/health`, `https://inkcreature-backend.onrender.com/health`). Hasta 2026-11-05 existia `app.setGlobalPrefix('api')`; se elimino en `src/main.ts`. Las rutas de imagen antiguas (`/api/imagenes/<id>`) se siguen aceptando al validar y borrar.
+- **Base local:** `http://localhost:3000`
+- **Base producción:** `https://inkcreature-backend.onrender.com`
 - **Total:** **37 endpoints** en 9 controllers (+ 1 servicio estático legacy)
 
 ---
@@ -15,7 +15,7 @@ Documentación de **todos los endpoints existentes** en el backend, extraída di
 
 ### 1.1 Autenticación
 
-JWT con esquema Bearer. El token se obtiene en `POST /api/auth/login` y se envía en cada petición protegida:
+JWT con esquema Bearer. El token se obtiene en `POST /auth/login` y se envía en cada petición protegida:
 
 ```
 Authorization: Bearer <access_token>
@@ -84,7 +84,7 @@ Los endpoints multipart esperan el campo **`imagen`**:
 > **SVG y GIF están prohibidos a propósito** (SVG puede llevar scripts y se serviría desde el dominio del API).
 
 Los binarios se guardan en la **base de datos** (`proyecto7.imagenes`, columna `data` BYTEA), no en disco.
-Las URLs guardadas son **relativas**: `/api/imagenes/<id>`.
+Las URLs guardadas son **relativas**: `/imagenes/<id>`. Las filas antiguas guardadas como `/api/imagenes/<id>` siguen siendo validas (validacion y borrado aceptan ambas; el SPA las normaliza).
 
 ### 1.6 Fechas y horas
 
@@ -98,54 +98,54 @@ Las URLs guardadas son **relativas**: `/api/imagenes/<id>`.
 
 | # | Método | Ruta | Auth | Rol | Descripción |
 |---|---|---|---|---|---|
-| 1 | `GET` | `/api` | Público | — | Saludo `Hello World!` (smoke test) |
-| 2 | `GET` | `/api/health` | Público | — | Healthcheck con `SELECT 1` a Postgres |
-| 3 | `POST` | `/api/auth/login` | Público | — | Login, devuelve el JWT |
-| 4 | `GET` | `/api/auth/me` | JWT | — | Usuario de la sesión actual |
-| 5 | `POST` | `/api/usuarios` | Público | — | Registro de usuario |
-| 6 | `GET` | `/api/usuarios` | JWT | **admin** | Lista todos los usuarios |
-| 7 | `GET` | `/api/usuarios/:id` | JWT | propio / admin | Ver un usuario |
-| 8 | `PATCH` | `/api/usuarios/:id` | JWT | propio / admin | Actualizar perfil |
-| 9 | `POST` | `/api/usuarios/:id/foto` | JWT | propio / admin | Subir foto de perfil (multipart) |
-| 10 | `PATCH` | `/api/usuarios/:id/rol` | JWT | **admin** | Cambiar rol |
-| 11 | `DELETE` | `/api/usuarios/:id` | JWT | **admin** | Borrar usuario (+ su foto) |
-| 12 | `POST` | `/api/galeria/upload` | JWT | **admin** | Subir archivo a la BD |
-| 13 | `POST` | `/api/galeria` | JWT | **admin** | Registrar metadatos del tatuaje |
-| 14 | `GET` | `/api/galeria` | Público | — | Listar galería (más reciente primero) |
-| 15 | `GET` | `/api/galeria/:id` | Público | — | Ver una entrada de galería |
-| 16 | `PATCH` | `/api/galeria/:id` | JWT | **admin** | Actualizar entrada |
-| 17 | `DELETE` | `/api/galeria/:id` | JWT | **admin** | Borrar entrada + binario |
-| 18 | `POST` | `/api/imagenes` | JWT | — | Subir imagen a la BD |
-| 19 | `GET` | `/api/imagenes` | JWT | — | Listar metadatos de imágenes |
-| 20 | `GET` | `/api/imagenes/:id` | **Público** | — | Servir el binario (la URL de la imagen) |
-| 21 | `DELETE` | `/api/imagenes/:id` | JWT | — | Borrar imagen de la BD |
-| 22 | `POST` | `/api/empleados` | JWT | **admin** | Meter usuario al catálogo de tatuadores |
-| 23 | `GET` | `/api/empleados` | Público | — | Listar tatuadores |
-| 24 | `GET` | `/api/empleados/:id` | Público | — | Ver un tatuador |
-| 25 | `PATCH` | `/api/empleados/:id` | JWT | **admin** | Actualizar ficha |
-| 26 | `DELETE` | `/api/empleados/:id` | JWT | **admin** | Borrar ficha del catálogo |
-| 27 | `POST` | `/api/citas` | JWT | propio / admin | Crear cita |
-| 28 | `GET` | `/api/citas` | Público | — | Listar citas (filtros opcionales) |
-| 29 | `GET` | `/api/citas/:id` | Público | — | Ver una cita |
-| 30 | `PATCH` | `/api/citas/:id` | JWT | dueño / tatuador / admin | Actualizar cita (incl. `estado`) |
-| 31 | `DELETE` | `/api/citas/:id` | JWT | dueño / tatuador / admin | Borrar cita |
-| 32 | `POST` | `/api/horarios-trabajador` | JWT | tatuador / admin | Crear franja semanal |
-| 33 | `GET` | `/api/horarios-trabajador` | Público | — | Listar horarios (filtro opcional) |
-| 34 | `GET` | `/api/horarios-trabajador/:id` | Público | — | Ver una franja |
-| 35 | `PATCH` | `/api/horarios-trabajador/:id` | JWT | tatuador / admin | Actualizar franja |
-| 36 | `DELETE` | `/api/horarios-trabajador/:id` | JWT | tatuador / admin | Borrar franja |
-| 37 | `POST` | `/api/ia/analyze-tattoo` | JWT | — | Analizar descripción con Gemini |
-| — | `GET` | `/uploads/<archivo>` | Público | — | **Estático legacy** (fuera de `/api`, sin uso nuevo) |
+| 1 | `GET` | `/` | Público | — | Saludo `Hello World!` (smoke test) |
+| 2 | `GET` | `/health` | Público | — | Healthcheck con `SELECT 1` a Postgres |
+| 3 | `POST` | `/auth/login` | Público | — | Login, devuelve el JWT |
+| 4 | `GET` | `/auth/me` | JWT | — | Usuario de la sesión actual |
+| 5 | `POST` | `/usuarios` | Público | — | Registro de usuario |
+| 6 | `GET` | `/usuarios` | JWT | **admin** | Lista todos los usuarios |
+| 7 | `GET` | `/usuarios/:id` | JWT | propio / admin | Ver un usuario |
+| 8 | `PATCH` | `/usuarios/:id` | JWT | propio / admin | Actualizar perfil |
+| 9 | `POST` | `/usuarios/:id/foto` | JWT | propio / admin | Subir foto de perfil (multipart) |
+| 10 | `PATCH` | `/usuarios/:id/rol` | JWT | **admin** | Cambiar rol |
+| 11 | `DELETE` | `/usuarios/:id` | JWT | **admin** | Borrar usuario (+ su foto) |
+| 12 | `POST` | `/galeria/upload` | JWT | **admin** | Subir archivo a la BD |
+| 13 | `POST` | `/galeria` | JWT | **admin** | Registrar metadatos del tatuaje |
+| 14 | `GET` | `/galeria` | Público | — | Listar galería (más reciente primero) |
+| 15 | `GET` | `/galeria/:id` | Público | — | Ver una entrada de galería |
+| 16 | `PATCH` | `/galeria/:id` | JWT | **admin** | Actualizar entrada |
+| 17 | `DELETE` | `/galeria/:id` | JWT | **admin** | Borrar entrada + binario |
+| 18 | `POST` | `/imagenes` | JWT | — | Subir imagen a la BD |
+| 19 | `GET` | `/imagenes` | JWT | — | Listar metadatos de imágenes |
+| 20 | `GET` | `/imagenes/:id` | **Público** | — | Servir el binario (la URL de la imagen) |
+| 21 | `DELETE` | `/imagenes/:id` | JWT | — | Borrar imagen de la BD |
+| 22 | `POST` | `/empleados` | JWT | **admin** | Meter usuario al catálogo de tatuadores |
+| 23 | `GET` | `/empleados` | Público | — | Listar tatuadores |
+| 24 | `GET` | `/empleados/:id` | Público | — | Ver un tatuador |
+| 25 | `PATCH` | `/empleados/:id` | JWT | **admin** | Actualizar ficha |
+| 26 | `DELETE` | `/empleados/:id` | JWT | **admin** | Borrar ficha del catálogo |
+| 27 | `POST` | `/citas` | JWT | propio / admin | Crear cita |
+| 28 | `GET` | `/citas` | Público | — | Listar citas (filtros opcionales) |
+| 29 | `GET` | `/citas/:id` | Público | — | Ver una cita |
+| 30 | `PATCH` | `/citas/:id` | JWT | dueño / tatuador / admin | Actualizar cita (incl. `estado`) |
+| 31 | `DELETE` | `/citas/:id` | JWT | dueño / tatuador / admin | Borrar cita |
+| 32 | `POST` | `/horarios-trabajador` | JWT | tatuador / admin | Crear franja semanal |
+| 33 | `GET` | `/horarios-trabajador` | Público | — | Listar horarios (filtro opcional) |
+| 34 | `GET` | `/horarios-trabajador/:id` | Público | — | Ver una franja |
+| 35 | `PATCH` | `/horarios-trabajador/:id` | JWT | tatuador / admin | Actualizar franja |
+| 36 | `DELETE` | `/horarios-trabajador/:id` | JWT | tatuador / admin | Borrar franja |
+| 37 | `POST` | `/ia/analyze-tattoo` | JWT | — | Analizar descripción con Gemini |
+| — | `GET` | `/uploads/<archivo>` | Público | — | **Estático legacy** (fuera de `/`, sin uso nuevo) |
 
 ---
 
 ## 3. Raíz y healthcheck — `src/app.controller.ts`
 
-### `GET /api`
+### `GET /`
 
 Público. Respuesta `text/html`/texto plano: `Hello World!`
 
-### `GET /api/health`
+### `GET /health`
 
 Público. Obliga a Postgres a responder con `SELECT 1`.
 
@@ -168,9 +168,9 @@ Público. Obliga a Postgres a responder con `SELECT 1`.
 
 ---
 
-## 4. Autenticación — `/api/auth`
+## 4. Autenticación — `/auth`
 
-### `POST /api/auth/login` — público
+### `POST /auth/login` — público
 
 **Body**
 
@@ -199,7 +199,7 @@ Público. Obliga a Postgres a responder con `SELECT 1`.
 > El mismo mensaje para los tres casos: no se revela qué parte falló. Cuando el email no existe se
 > compara igualmente contra `DUMMY_HASH` para no filtrar información por tiempo de respuesta.
 
-### `GET /api/auth/me` — JWT
+### `GET /auth/me` — JWT
 
 Devuelve el usuario que `JwtStrategy` dejó en `request.user` (select público completo):
 
@@ -210,7 +210,7 @@ Devuelve el usuario que `JwtStrategy` dejó en `request.user` (select público c
   "apellido": "Cobo",
   "email": "kgcobo@gmail.com",
   "telefono": null,
-  "foto_perfil_url": "/api/imagenes/8",
+  "foto_perfil_url": "/imagenes/8",
   "rol": "admin",
   "activo": true,
   "fecha_registro": "2026-08-26T22:07:49.000Z",
@@ -222,7 +222,7 @@ Devuelve el usuario que `JwtStrategy` dejó en `request.user` (select público c
 
 ---
 
-## 5. Usuarios — `/api/usuarios`
+## 5. Usuarios — `/usuarios`
 
 **Select público (`USUARIO_SELECT`)** — presente en todas las respuestas:
 `id`, `nombre`, `apellido`, `email`, `telefono`, `foto_perfil_url`, `rol`, `activo`,
@@ -230,7 +230,7 @@ Devuelve el usuario que `JwtStrategy` dejó en `request.user` (select público c
 
 > `password_hash` **nunca** se serializa.
 
-### `POST /api/usuarios` — público (registro)
+### `POST /usuarios` — público (registro)
 
 ```json
 {
@@ -239,7 +239,7 @@ Devuelve el usuario que `JwtStrategy` dejó en `request.user` (select público c
   "email": "ana@ejemplo.com",
   "password": "contraseña-larga",
   "telefono": "+57 300 000 0000",
-  "foto_perfil_url": "/api/imagenes/12"
+  "foto_perfil_url": "/imagenes/12"
 }
 ```
 
@@ -260,18 +260,18 @@ Devuelve el usuario que `JwtStrategy` dejó en `request.user` (select público c
 **409** `El correo <email> ya está registrado` (violación `P2002`).
 **400** si el body trae `rol`, `activo` o cualquier campo no declarado (`forbidNonWhitelisted`).
 
-### `GET /api/usuarios` — JWT + admin
+### `GET /usuarios` — JWT + admin
 
 **200** → array de usuarios con el select público. Sin orden garantizado.
 
 **401** sin token · **403** si el rol no es `admin`.
 
-### `GET /api/usuarios/:id` — JWT (propio usuario o admin)
+### `GET /usuarios/:id` — JWT (propio usuario o admin)
 
 **200** → usuario público. **403** `No tienes permiso para consultar este usuario`.
 **404** `Usuario con ID <id> no encontrado`.
 
-### `PATCH /api/usuarios/:id` — JWT (propio usuario o admin)
+### `PATCH /usuarios/:id` — JWT (propio usuario o admin)
 
 Actualización parcial: **todo opcional**, se escribe solo lo enviado.
 
@@ -294,12 +294,12 @@ Actualización parcial: **todo opcional**, se escribe solo lo enviado.
 
 **403** `No tienes permiso para modificar este usuario` · **404** si no existe.
 
-### `POST /api/usuarios/:id/foto` — JWT (propio usuario o admin)
+### `POST /usuarios/:id/foto` — JWT (propio usuario o admin)
 
 `multipart/form-data`, campo **`imagen`** (JPEG/PNG/WebP, ≤ 5 MB).
 
 - Guarda el binario en `proyecto7.imagenes`.
-- Actualiza `foto_perfil_url` a `/api/imagenes/<id>`.
+- Actualiza `foto_perfil_url` a `/imagenes/<id>`.
 - **Borra automáticamente la foto anterior** (si era una imagen en la BD).
 
 **201** → usuario público actualizado.
@@ -307,7 +307,7 @@ Actualización parcial: **todo opcional**, se escribe solo lo enviado.
 **Errores:** `400` falta el archivo / tipo no permitido · `403` `Sólo puedes cambiar tu propia foto (o ser administrador).`
 · `413` demasiado grande · `404` usuario inexistente.
 
-### `PATCH /api/usuarios/:id/rol` — JWT + admin
+### `PATCH /usuarios/:id/rol` — JWT + admin
 
 ```json
 { "rol": "empleado" }
@@ -321,7 +321,7 @@ Valores válidos: `cliente`, `empleado`, `admin` (`@IsEnum(RolUsuario)`).
 > Cambiar el rol surte efecto **inmediato** sobre tokens ya emitidos, porque el JWT solo guarda el id
 > y el rol se relee de la BD en cada petición.
 
-### `DELETE /api/usuarios/:id` — JWT + admin
+### `DELETE /usuarios/:id` — JWT + admin
 
 **200** → usuario eliminado (select público). También borra su foto de perfil de la tabla `imagenes`.
 
@@ -332,7 +332,7 @@ Valores válidos: `cliente`, `empleado`, `admin` (`@IsEnum(RolUsuario)`).
 
 ---
 
-## 6. Galería — `/api/galeria`
+## 6. Galería — `/galeria`
 
 Fila de `galeria`: `id`, `subido_por`, `empleado_id`, `imagen_url`, `titulo`, `descripcion`, `estilo`,
 `fecha_subida` + relaciones incluidas:
@@ -342,12 +342,12 @@ Fila de `galeria`: `id`, `subido_por`, `empleado_id`, `imagen_url`, `titulo`, `d
   "id": 13,
   "subido_por": 5,
   "empleado_id": 4,
-  "imagen_url": "/api/imagenes/7",
+  "imagen_url": "/imagenes/7",
   "titulo": "Tatuaje estilo Anime",
   "descripcion": "…",
   "estilo": "Anime",
   "fecha_subida": "2026-10-21T12:00:00.000Z",
-  "usuarios": { "id": 5, "nombre": "Kevin", "apellido": "Cobo", "foto_perfil_url": "/api/imagenes/8" },
+  "usuarios": { "id": 5, "nombre": "Kevin", "apellido": "Cobo", "foto_perfil_url": "/imagenes/8" },
   "empleados": {
     "id": 4,
     "usuario_id": 5,
@@ -355,7 +355,7 @@ Fila de `galeria`: `id`, `subido_por`, `empleado_id`, `imagen_url`, `titulo`, `d
     "biografia": "…",
     "fecha_contratacion": "2026-08-26",
     "activo": true,
-    "usuarios": { "id": 5, "nombre": "Kevin", "apellido": "Cobo", "foto_perfil_url": "/api/imagenes/8" }
+    "usuarios": { "id": 5, "nombre": "Kevin", "apellido": "Cobo", "foto_perfil_url": "/imagenes/8" }
   }
 }
 ```
@@ -363,21 +363,21 @@ Fila de `galeria`: `id`, `subido_por`, `empleado_id`, `imagen_url`, `titulo`, `d
 > El usuario de la relación va con **select público**: `id`, `nombre`, `apellido`, `foto_perfil_url`
 > (sin email ni teléfono).
 
-### `POST /api/galeria/upload` — JWT + admin
+### `POST /galeria/upload` — JWT + admin
 
 `multipart/form-data`, campo **`imagen`**.
 
 **201**
 
 ```json
-{ "url": "/api/imagenes/7", "id": 7 }
+{ "url": "/imagenes/7", "id": 7 }
 ```
 
-Es el **paso 1** del flujo de publicación; el **paso 2** es `POST /api/galeria` con esa `url`.
+Es el **paso 1** del flujo de publicación; el **paso 2** es `POST /galeria` con esa `url`.
 
 **Errores:** `400` falta el archivo / tipo no permitido / vacío · `403` no admin · `413` > 5 MB.
 
-### `POST /api/galeria` — JWT + admin
+### `POST /galeria` — JWT + admin
 
 Registra los **metadatos** de una imagen que ya existe. Aquí **no** se sube ningún archivo.
 
@@ -385,7 +385,7 @@ Registra los **metadatos** de una imagen que ya existe. Aquí **no** se sube nin
 {
   "subido_por": 5,
   "empleado_id": 4,
-  "imagen_url": "/api/imagenes/7",
+  "imagen_url": "/imagenes/7",
   "titulo": "Tatuaje estilo Anime",
   "descripcion": "Brazo completo",
   "estilo": "Anime"
@@ -406,7 +406,7 @@ Registra los **metadatos** de una imagen que ya existe. Aquí **no** se sube nin
 | Valor | ¿Aceptado? |
 |---|---|
 | `https://cdn.ejemplo.com/foto.jpg` | ✅ |
-| `/api/imagenes/7` | ✅ (lo que devuelve `/upload`) |
+| `/imagenes/7` | ✅ (lo que devuelve `/upload`) |
 | `/uploads/viejo.jpg` | ✅ (legacy en disco) |
 | `/files/1712-abc.webp` | ❌ **400** |
 | `image/DBZ.jpg` | ❌ **400** |
@@ -417,15 +417,15 @@ Registra los **metadatos** de una imagen que ya existe. Aquí **no** se sube nin
 **404** `Usuario con ID <id> no encontrado` / `Empleado con ID <id> no encontrado`: las FK se validan
 antes de escribir, así que un id inventado no llega a Postgres.
 
-### `GET /api/galeria` — público
+### `GET /galeria` — público
 
 **200** → array de galería, orden `fecha_subida DESC` (lo más reciente primero).
 
-### `GET /api/galeria/:id` — público
+### `GET /galeria/:id` — público
 
 **200** → fila con relaciones. **404** `Tatuaje con ID <id> no encontrado`.
 
-### `PATCH /api/galeria/:id` — JWT + admin
+### `PATCH /galeria/:id` — JWT + admin
 
 Todo opcional: `subido_por`, `empleado_id`, `imagen_url`, `titulo`, `descripcion`, `estilo`.
 
@@ -434,21 +434,21 @@ Todo opcional: `subido_por`, `empleado_id`, `imagen_url`, `titulo`, `descripcion
 
 **200** → fila actualizada · **400** validación · **404** no existe.
 
-### `DELETE /api/galeria/:id` — JWT + admin
+### `DELETE /galeria/:id` — JWT + admin
 
-Borra la fila **y** el binario asociado (`eliminarPorUrl` entiende `/api/imagenes/<id>` y `/uploads/<archivo>`).
+Borra la fila **y** el binario asociado (`eliminarPorUrl` entiende `/imagenes/<id>` y `/uploads/<archivo>`).
 
 **200** → fila eliminada · **404** no existe.
 
 ---
 
-## 7. Imágenes — `/api/imagenes`
+## 7. Imágenes — `/imagenes`
 
 Metadatos (sin el binario) en los listados:
 
 `id`, `nombre`, `mime_type`, `tamano`, `fecha_subida`
 
-### `POST /api/imagenes` — JWT
+### `POST /imagenes` — JWT
 
 `multipart/form-data`, campo **`imagen`**.
 
@@ -460,7 +460,7 @@ Metadatos (sin el binario) en los listados:
   "nombre": "foto.jpg",
   "mime_type": "image/jpeg",
   "tamano": 184320,
-  "url": "/api/imagenes/7",
+  "url": "/imagenes/7",
   "fecha_subida": "2026-10-21T12:00:00.000Z"
 }
 ```
@@ -468,11 +468,11 @@ Metadatos (sin el binario) en los listados:
 > El nombre original se sanea a `[a-z0-9._-]`, se recorta a 120 caracteres y se le fuerza la
 > extensión según el MIME.
 
-### `GET /api/imagenes` — JWT
+### `GET /imagenes` — JWT
 
 **200** → array de metadatos, orden `fecha_subida DESC`. **No** incluye `data`.
 
-### `GET /api/imagenes/:id` — **público**
+### `GET /imagenes/:id` — **público**
 
 Devuelve el **binario** (`Content-Type` real de la imagen). Es la URL que se guarda en
 `galeria.imagen_url` y `usuarios.foto_perfil_url`, y la que carga el `<img>` sin token.
@@ -488,7 +488,7 @@ Content-Disposition: inline; filename="foto.jpg"
 
 **404** `Imagen con ID <id> no encontrada`.
 
-### `DELETE /api/imagenes/:id` — JWT
+### `DELETE /imagenes/:id` — JWT
 
 **200** → fila eliminada con solo metadatos (`id`, `nombre`, `mime_type`, `tamano`, `fecha_subida`).
 **404** si no existe.
@@ -497,7 +497,7 @@ Content-Disposition: inline; filename="foto.jpg"
 
 ---
 
-## 8. Empleados / tatuadores — `/api/empleados`
+## 8. Empleados / tatuadores — `/empleados`
 
 Fila de `empleados`: `id`, `usuario_id`, `especialidad`, `biografia`, `fecha_contratacion`, `activo`
 + `usuarios` (select público) + `galeria[]`.
@@ -505,7 +505,7 @@ Fila de `empleados`: `id`, `usuario_id`, `especialidad`, `biografia`, `fecha_con
 > Una fila aquí **solo** significa "está en el catálogo". El permiso real es `usuarios.rol = 'empleado'`.
 > Para que alguien sea tatuador de verdad hacen falta **las dos cosas**.
 
-### `POST /api/empleados` — JWT + admin
+### `POST /empleados` — JWT + admin
 
 ```json
 { "usuario_id": 5, "especialidad": "Realismo", "biografia": "10 años de experiencia", "activo": true }
@@ -523,15 +523,15 @@ Fila de `empleados`: `id`, `usuario_id`, `especialidad`, `biografia`, `fecha_con
 **404** `Usuario con ID <id> no encontrado` · **409** `El usuario <id> ya tiene ficha de tatuador` (`P2002`).
 Este endpoint **no** cambia el rol.
 
-### `GET /api/empleados` — público
+### `GET /empleados` — público
 
 **200** → array de fichas con `usuarios` (público) y `galeria[]`. Sin orden garantizado.
 
-### `GET /api/empleados/:id` — público
+### `GET /empleados/:id` — público
 
 **200** → ficha con relaciones. **404** `Empleado con ID <id> no encontrado`.
 
-### `PATCH /api/empleados/:id` — JWT + admin
+### `PATCH /empleados/:id` — JWT + admin
 
 `especialidad`, `biografia`, `activo` (todos opcionales). **`usuario_id` no se puede cambiar** (400 si se envía).
 
@@ -539,7 +539,7 @@ Este endpoint **no** cambia el rol.
 
 **200** → ficha actualizada · **404** no existe.
 
-### `DELETE /api/empleados/:id` — JWT + admin
+### `DELETE /empleados/:id` — JWT + admin
 
 **200** → ficha eliminada. **No** borra al usuario.
 
@@ -548,7 +548,7 @@ Este endpoint **no** cambia el rol.
 
 ---
 
-## 9. Citas — `/api/citas`
+## 9. Citas — `/citas`
 
 Fila de `citas`: `id`, `usuario_id`, `empleado_id`, `fecha` (`YYYY-MM-DD`), `hora_inicio`, `hora_fin`,
 `estado`, `notas`, `fecha_creacion`, `fecha_actualizacion` + relaciones:
@@ -561,7 +561,7 @@ Fila de `citas`: `id`, `usuario_id`, `empleado_id`, `fecha` (`YYYY-MM-DD`), `hor
 
 `estado` ∈ `pendiente | confirmada | cancelada | completada` (enum `EstadoCita`; por defecto `pendiente`).
 
-### `POST /api/citas` — JWT
+### `POST /citas` — JWT
 
 ```json
 {
@@ -599,7 +599,7 @@ Fila de `citas`: `id`, `usuario_id`, `empleado_id`, `fecha` (`YYYY-MM-DD`), `hor
 | `404` | `usuario_id` o `empleado_id` no existen (se comprueban antes de escribir) |
 | `409` | `Ya existe una cita para ese empleado, fecha y hora de inicio` (índice único `empleado_id + fecha + hora_inicio`) |
 
-### `GET /api/citas` — público
+### `GET /citas` — público
 
 Query params opcionales:
 
@@ -612,11 +612,11 @@ Query params opcionales:
 > Los filtros son **comodidad, no control de acceso**: cualquiera ve todas las citas.
 > Un valor no numérico se ignora silenciosamente.
 
-### `GET /api/citas/:id` — público
+### `GET /citas/:id` — público
 
 **200** → cita con relaciones · **404** `Cita con ID <id> no encontrada`.
 
-### `PATCH /api/citas/:id` — JWT
+### `PATCH /citas/:id` — JWT
 
 `PartialType(CreateCitaDto)`: mismos campos, todos opcionales. Es el endpoint que se usa para
 **confirmar / cancelar / completar**:
@@ -631,7 +631,7 @@ Query params opcionales:
 
 **200** → cita actualizada · **400** horas inválidas · **403** la cita no es tuya · **404** no existe · **409** hueco duplicado.
 
-### `DELETE /api/citas/:id` — JWT
+### `DELETE /citas/:id` — JWT
 
 **200** → cita eliminada (con relaciones) · **403** la cita no es tuya · **404** no existe.
 
@@ -641,7 +641,7 @@ Query params opcionales:
 
 ---
 
-## 10. Horarios del trabajador — `/api/horarios-trabajador`
+## 10. Horarios del trabajador — `/horarios-trabajador`
 
 Plantilla **semanal** del tatuador (no son citas concretas).
 
@@ -650,7 +650,7 @@ Fila: `id`, `empleado_id`, `dia_semana` (0 = domingo … 6 = sábado), `hora_ini
 
 > La relación usa el **select público** del usuario (sin `email` ni `telefono`).
 
-### `POST /api/horarios-trabajador` — JWT
+### `POST /horarios-trabajador` — JWT
 
 ```json
 { "empleado_id": 4, "dia_semana": 2, "hora_inicio": "09:00", "hora_fin": "18:00" }
@@ -671,15 +671,15 @@ Fila: `id`, `empleado_id`, `dia_semana` (0 = domingo … 6 = sábado), `hora_ini
 > El índice único corta el **duplicado exacto**, pero **no detecta solapamientos**
 > (09:00–12:00 y 11:00–14:00 del mismo día pasan sin error).
 
-### `GET /api/horarios-trabajador` — público
+### `GET /horarios-trabajador` — público
 
 Query opcional: `?empleado_id=<id>`. **200** → array ordenado por `dia_semana ASC, hora_inicio ASC`.
 
-### `GET /api/horarios-trabajador/:id` — público
+### `GET /horarios-trabajador/:id` — público
 
 **200** → franja · **404** `Horario con ID <id> no encontrado`.
 
-### `PATCH /api/horarios-trabajador/:id` — JWT
+### `PATCH /horarios-trabajador/:id` — JWT
 
 `PartialType(CreateHorarioDto)`: todos opcionales. El servicio completa la franja con lo guardado y
 revalida el rango.
@@ -689,7 +689,7 @@ sea del mismo usuario (o eres admin): si no, `403`.
 
 **200** → franja actualizada · **400** · **403** · **404** · **409** duplicado.
 
-### `DELETE /api/horarios-trabajador/:id` — JWT
+### `DELETE /horarios-trabajador/:id` — JWT
 
 **200** → franja eliminada · **403** la ficha es de otro tatuador · **404** no existe.
 
@@ -699,9 +699,9 @@ sea del mismo usuario (o eres admin): si no, `403`.
 
 ---
 
-## 11. Inteligencia artificial — `/api/ia`
+## 11. Inteligencia artificial — `/ia`
 
-### `POST /api/ia/analyze-tattoo` — JWT
+### `POST /ia/analyze-tattoo` — JWT
 
 Proxy del backend hacia **Google Gemini** (`gemini-2.5-flash`). La clave `GEMINI_API_KEY` **nunca**
 sale del servidor.
@@ -741,7 +741,7 @@ sale del servidor.
 ## 12. Estático legacy — `/uploads`
 
 ```
-GET /uploads/<archivo>   (público, FUERA del prefijo /api)
+GET /uploads/<archivo>   (publico, fuera de las rutas del API)
 ```
 
 `useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' })`.
@@ -757,31 +757,31 @@ archivos se pierden en cada redeploy.
 ### 13.1 Publicar una imagen en la galería (2 pasos)
 
 ```
-1) POST /api/galeria/upload        (JWT admin, multipart campo "imagen")
-   ← { "url": "/api/imagenes/7", "id": 7 }
+1) POST /galeria/upload        (JWT admin, multipart campo "imagen")
+   ← { "url": "/imagenes/7", "id": 7 }
 
-2) POST /api/galeria               (JWT admin, JSON)
-   { "subido_por": 5, "empleado_id": 4, "imagen_url": "/api/imagenes/7", "titulo": "…", "estilo": "…" }
+2) POST /galeria               (JWT admin, JSON)
+   { "subido_por": 5, "empleado_id": 4, "imagen_url": "/imagenes/7", "titulo": "…", "estilo": "…" }
    ← fila de galeria con relaciones
 ```
 
-El `<img>` del navegador carga `GET /api/imagenes/7` (público, cacheado 1 año).
+El `<img>` del navegador carga `GET /imagenes/7` (público, cacheado 1 año).
 
 ### 13.2 Cambiar la foto de perfil
 
 ```
-1) POST /api/usuarios/:id/foto    (JWT propio o admin, multipart campo "imagen")
-   ← usuario con foto_perfil_url = "/api/imagenes/<nuevo id>"
+1) POST /usuarios/:id/foto    (JWT propio o admin, multipart campo "imagen")
+   ← usuario con foto_perfil_url = "/imagenes/<nuevo id>"
    (el binario anterior se borra solo)
 ```
 
 ### 13.3 Convertir un usuario registrado en tatuador
 
 ```
-1) POST /api/empleados            (JWT admin)  { "usuario_id": 5, "especialidad": "…" }
-2) PATCH /api/usuarios/5/rol      (JWT admin)  { "rol": "empleado" }
+1) POST /empleados            (JWT admin)  { "usuario_id": 5, "especialidad": "…" }
+2) PATCH /usuarios/5/rol      (JWT admin)  { "rol": "empleado" }
 
-3) POST /api/horarios-trabajador  (JWT)        franjas semanales del tatuador
+3) POST /horarios-trabajador  (JWT)        franjas semanales del tatuador
 ```
 
 Sin el paso 2 la persona aparece en el catálogo pero **no** tiene permisos de `empleado`.
@@ -790,13 +790,13 @@ Sin el paso 2 la persona aparece en el catálogo pero **no** tiene permisos de `
 
 ```powershell
 # Login
-$r = curl.exe -s -X POST "http://localhost:3000/api/auth/login" `
+$r = curl.exe -s -X POST "http://localhost:3000/auth/login" `
   -H "Content-Type: application/json" `
   -d '{\"email\":\"kgcobo@gmail.com\",\"password\":\"tu-clave\"}' | ConvertFrom-Json
 $t = $r.access_token
 
 # Subir imagen (multipart)
-curl.exe -s -X POST "http://localhost:3000/api/galeria/upload" `
+curl.exe -s -X POST "http://localhost:3000/galeria/upload" `
   -H "Authorization: Bearer $t" `
   -F "imagen=@C:\ruta\foto.jpg"
 ```
@@ -825,13 +825,13 @@ No están implementados en este backend (no documentarlos ni llamarlos):
 
 | Ruta inexistente | Nota |
 |---|---|
-| `POST /api/uploads` | Pertenece a la rama `dev-patino`, **no** está en este código |
-| `/api/files/...` | Ídem (servido por `dev-patino`) |
-| `/api/tatuadores` | El catálogo es `/api/empleados` |
-| `/api/resenas` | Las reseñas viven en `localStorage` del frontend |
-| `/api/auth/register` | El registro es `POST /api/usuarios` |
-| `/api/auth/logout` | No hay revocación: el cliente borra el token |
-| `/api/auth/refresh` | No hay refresh token; el JWT dura 1 h |
+| `POST /uploads` | Pertenece a la rama `dev-patino`, **no** está en este código |
+| `/files/...` | Ídem (servido por `dev-patino`) |
+| `/tatuadores` | El catálogo es `/empleados` |
+| `/resenas` | Las reseñas viven en `localStorage` del frontend |
+| `/auth/register` | El registro es `POST /usuarios` |
+| `/auth/logout` | No hay revocación: el cliente borra el token |
+| `/auth/refresh` | No hay refresh token; el JWT dura 1 h |
 | Paginación / búsqueda | Ningún listado soporta `page`/`limit`/`q` |
 
 ---
@@ -843,18 +843,18 @@ No están implementados en este backend (no documentarlos ni llamarlos):
 - `citas` y `horarios-trabajador` ya usan el **select público** del usuario: dejaron de exponer
   `email` y `telefono` en listados públicos.
 - Las FK inexistentes en `galeria` y `empleados` ahora dan **404** (antes 500).
-- `POST /api/empleados` con ficha duplicada → **409**; `DELETE /api/empleados/:id` con citas u
+- `POST /empleados` con ficha duplicada → **409**; `DELETE /empleados/:id` con citas u
   horarios → **409** con la alternativa `activo: false`.
-- `PATCH /api/usuarios/:id` con email repetido → **409**.
-- `DELETE /api/usuarios/:id` con fotos en galería → **409** (antes 500).
-- `DELETE /api/imagenes/:id` ya **no** devuelve el binario.
+- `PATCH /usuarios/:id` con email repetido → **409**.
+- `DELETE /usuarios/:id` con fotos en galería → **409** (antes 500).
+- `DELETE /imagenes/:id` ya **no** devuelve el binario.
 - **Autorización por propietario** en citas y horarios (ver §9 y §10): el cliente dueño, el tatuador de
   la cita/ficha y el admin; el resto recibe **403**.
-- `PATCH /api/usuarios/:id` con `foto_perfil_url` ahora **borra el binario anterior**, igual que
+- `PATCH /usuarios/:id` con `foto_perfil_url` ahora **borra el binario anterior**, igual que
   `POST /:id/foto`.
-- **`/api/projects` eliminado**: era el CRUD de ejemplo del CLI de Nest, sin guards ni uso real.
+- **`/projects` eliminado**: era el CRUD de ejemplo del CLI de Nest, sin guards ni uso real.
 - Frontend `employees.ts` (repo `Ink-Creature`): al editar una ficha se cruza el rol real con
-  `GET /api/usuarios`, así que un tatuador `admin` ya **no** se degrada a `empleado` al guardar.
+  `GET /usuarios`, así que un tatuador `admin` ya **no** se degrada a `empleado` al guardar.
 
 **Sigue pendiente:**
 

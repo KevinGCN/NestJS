@@ -79,7 +79,7 @@ describe('ImagenesService', () => {
   });
 
   describe('guardar', () => {
-    it('guarda el binario y devuelve la ruta "/api/imagenes/<id>"', async () => {
+    it('guarda el binario y devuelve la ruta "/imagenes/<id>"', async () => {
       prisma.imagenes.create.mockResolvedValue({
         id: 7,
         nombre: 'foto.jpg',
@@ -93,7 +93,7 @@ describe('ImagenesService', () => {
       );
 
       expect(resultado.id).toBe(7);
-      expect(resultado.url).toBe('/api/imagenes/7');
+      expect(resultado.url).toBe('/imagenes/7');
       const args = argsDe<{ data: Record<string, unknown> }>(
         prisma.imagenes.create,
       );

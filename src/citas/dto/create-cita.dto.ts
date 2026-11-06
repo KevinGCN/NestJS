@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 
 /**
- * Body de `POST /api/citas`.
+ * Body de `POST /citas`.
  * Aquí solo se valida el FORMATO (ISO / HH:mm); el significado (que `hora_fin`
  * sea posterior a `hora_inicio`, que las FK existan) se comprueba en
  * `CitasService` porque requiere comparar varios campos o consultar la BD.

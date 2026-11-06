@@ -18,7 +18,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SesionUsuario } from '../common/sesion';
 
 /**
- * Endpoints REST de horarios (`/api/horarios-trabajador`).
+ * Endpoints REST de horarios (`/horarios-trabajador`).
  * Es la plantilla semanal del tatuador (día 0-6 + franja horaria), no citas
  * concretas: el frontend la usa para pintar la disponibilidad.
  * Consultar es público; crear/modificar/borrar exige JWT **y** ser el tatuador

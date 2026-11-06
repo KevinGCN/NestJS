@@ -1,8 +1,8 @@
 /**
- * Rutas de autenticación bajo /api/auth.
+ * Rutas de autenticación bajo /auth.
  *
- * - `POST /api/auth/login` es pública (es la que emite el token).
- * - `GET /api/auth/me` exige JWT y sirve al frontend para restaurar la sesión
+ * - `POST /auth/login` es pública (es la que emite el token).
+ * - `GET /auth/me` exige JWT y sirve al frontend para restaurar la sesión
  *   al recargar: si responde 401, el interceptor limpia el token guardado.
  */
 

@@ -17,11 +17,11 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
 /**
- * Endpoints REST del catálogo de tatuadores (`/api/empleados`).
+ * Endpoints REST del catálogo de tatuadores (`/empleados`).
  * Importante: una fila aquí solo significa "está en el catálogo"; el permiso
  * real es `usuarios.rol = 'empleado'`. Para que alguien sea trabajador hacen
- * falta las dos cosas, por eso la UI hace POST /api/empleados y además
- * PATCH /api/usuarios/:id/rol.
+ * falta las dos cosas, por eso la UI hace POST /empleados y además
+ * PATCH /usuarios/:id/rol.
  * Consultar es público (catálogo visible sin sesión); escribir es solo de admin.
  */
 @Controller('empleados')
@@ -31,7 +31,7 @@ export class EmpleadosController {
   // Crear/Modificar/Borrar empleados es exclusivo de admin: la ficha del
   // tatuador forma parte del catálogo público y no debe poder autoconcedérsela
   // cualquiera. Ojo: este POST NO cambia el rol del usuario, solo lo mete al
-  // catálogo (el rol se cambia con PATCH /api/usuarios/:id/rol).
+  // catálogo (el rol se cambia con PATCH /usuarios/:id/rol).
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Post()

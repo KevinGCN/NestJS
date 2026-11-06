@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 
 /**
- * Body de `POST /api/usuarios` (registro público, sin JWT).
+ * Body de `POST /usuarios` (registro público, sin JWT).
  * A propósito NO incluye `rol` ni `activo`: el rol por defecto (`cliente`) lo
  * pone la base de datos y solo un admin puede ascender a alguien. Si estos
  * campos fueran parte del DTO, cualquiera podría registrarse como admin.
@@ -51,8 +51,8 @@ export class CreateUsuarioDto {
   @IsString()
   /**
    * Opcional porque el flujo normal es subir el archivo con
-   * `POST /api/usuarios/:id/foto` (multipart), que deja aquí la ruta relativa
-   * "/api/imagenes/<id>". No debe contener binarios ni claves.
+   * `POST /usuarios/:id/foto` (multipart), que deja aquí la ruta relativa
+   * "/imagenes/<id>". No debe contener binarios ni claves.
    */
   foto_perfil_url?: string;
 }

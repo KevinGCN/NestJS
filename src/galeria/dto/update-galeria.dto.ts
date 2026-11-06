@@ -2,9 +2,9 @@ import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { IsImagenUrl } from '../../common/validadores';
 
 /**
- * Body de `PATCH /api/galeria/:id`. Todo opcional: se escribe solo lo enviado.
+ * Body de `PATCH /galeria/:id`. Todo opcional: se escribe solo lo enviado.
  * Ojo con `imagen_url`: cambiarla aquí NO borra el binario anterior (eso solo
- * pasa en `DELETE /api/galeria/:id`), así que apuntar a otra imagen deja la
+ * pasa en `DELETE /galeria/:id`), así que apuntar a otra imagen deja la
  * vieja huérfana en la tabla `imagenes`.
  */
 export class UpdateGaleriaDto {
@@ -20,8 +20,8 @@ export class UpdateGaleriaDto {
   @Min(1)
   empleado_id?: number;
 
-  // URL absoluta o ruta del backend ("/api/imagenes/<id>").
-  // Si se cambia, debe ser una imagen ya subida con /api/galeria/upload.
+  // URL absoluta o ruta del backend ("/imagenes/<id>").
+  // Si se cambia, debe ser una imagen ya subida con /galeria/upload.
   @IsOptional()
   @IsImagenUrl()
   imagen_url?: string;

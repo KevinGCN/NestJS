@@ -1,5 +1,5 @@
 /**
- * Cuerpo de `POST /api/auth/login`.
+ * Cuerpo de `POST /auth/login`.
  *
  * Solo valida forma (email bien escrito y contraseña no vacía); si las
  * credenciales existen se decide en `AuthService`. El `ValidationPipe` global

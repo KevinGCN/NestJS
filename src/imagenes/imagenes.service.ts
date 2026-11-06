@@ -16,7 +16,7 @@ export interface ImagenGuardada {
   nombre: string;
   mime_type: string;
   tamano: number;
-  /** Ruta relativa servida por el backend: "/api/imagenes/<id>" */
+  /** Ruta relativa servida por el backend: "/imagenes/<id>" */
   url: string;
   fecha_subida: Date;
 }
@@ -116,7 +116,8 @@ export class ImagenesService {
   /**
    * Borra el archivo binario asociado a una URL guardada en la BD.
    *
-   * - "/api/imagenes/<id>" → elimina la fila de la tabla `imagenes`.
+   * - "/imagenes/<id>" → elimina la fila de la tabla `imagenes`.
+   * - "/api/imagenes/<id>" → igual, forma guardada por versiones anteriores.
    * - "/uploads/<file>"   → borra el archivo legacy del disco (ver `borrarImagen`).
    * - URL externa (http...) → no hay nada que borrar aquí.
    */

@@ -1,9 +1,10 @@
 /**
  * Pruebas de `IsImagenUrl`.
  *
- * Cubren las tres formas aceptadas (ruta del backend, URL absoluta y ruta
- * legacy) y los casos que deben rechazarse: rutas relativas arbitrarias,
- * esquemas peligrosos (`javascript:`) y cadena vacía.
+ * Cubren las formas aceptadas (ruta actual "/imagenes/<id>", ruta antigua
+ * "/api/imagenes/<id>", URL absoluta y ruta legacy "/uploads/<archivo>") y los
+ * casos que deben rechazarse: rutas relativas arbitrarias, esquemas peligrosos
+ * (`javascript:`) y cadena vacía.
  */
 import { validate } from 'class-validator';
 import { IsImagenUrl } from './validadores';
@@ -22,7 +23,11 @@ async function validar(valor: string): Promise<string[]> {
 }
 
 describe('IsImagenUrl', () => {
-  it('acepta la ruta del backend "/api/imagenes/<id>"', async () => {
+  it('acepta la ruta del backend "/imagenes/<id>"', async () => {
+    expect(await validar('/imagenes/12')).toEqual([]);
+  });
+
+  it('acepta la ruta antigua "/api/imagenes/<id>" (filas ya guardadas)', async () => {
     expect(await validar('/api/imagenes/12')).toEqual([]);
   });
 

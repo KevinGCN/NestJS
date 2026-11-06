@@ -2,9 +2,9 @@ import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { IsImagenUrl } from '../../common/validadores';
 
 /**
- * Body de `POST /api/galeria`: registra un tatuaje ya subido.
+ * Body de `POST /galeria`: registra un tatuaje ya subido.
  * `imagen_url` NO se valida con `@IsUrl()` porque el backend guarda rutas
- * relativas ("/api/imagenes/<id>"): `IsImagenUrl` acepta URL absoluta, esa ruta
+ * relativas ("/imagenes/<id>"): `IsImagenUrl` acepta URL absoluta, esa ruta
  * y también la legacy "/uploads/<archivo>".
  */
 export class CreateGaleriaDto {
@@ -22,9 +22,9 @@ export class CreateGaleriaDto {
   @Min(1)
   empleado_id?: number;
 
-  // URL absoluta o ruta del backend ("/api/imagenes/<id>").
+  // URL absoluta o ruta del backend ("/imagenes/<id>").
   // Obligatorio, como `subido_por`: el binario ya tiene que existir y lo crea
-  // `POST /api/galeria/upload` (aquí no se sube ningún archivo).
+  // `POST /galeria/upload` (aquí no se sube ningún archivo).
   @IsString()
   @IsImagenUrl()
   imagen_url: string;

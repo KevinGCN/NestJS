@@ -23,9 +23,9 @@ import { Roles } from '../auth/roles.decorator';
 import { IMAGEN_MAX_BYTES } from '../common/imagenes';
 
 /**
- * Endpoints REST de la galería (`/api/galeria`).
+ * Endpoints REST de la galería (`/galeria`).
  * Subir una foto son DOS pasos: primero `POST /upload` guarda el binario en la
- * BD y devuelve `{ url: "/api/imagenes/<id>" }`; después `POST /api/galeria`
+ * BD y devuelve `{ url: "/imagenes/<id>" }`; después `POST /galeria`
  * registra los metadatos con esa url. Así la fila de `galeria` solo guarda una
  * ruta relativa, que sigue siendo válida en cualquier host.
  * Consultar es público; escribir es solo de admin.
@@ -39,7 +39,7 @@ export class GaleriaController {
 
   // Subida de archivos (multipart/form-data, campo "imagen").
   // El binario se guarda en la base de datos (tabla `imagenes`) y se devuelve
-  // la ruta pública "/api/imagenes/<id>" para registrarla en POST /api/galeria.
+  // la ruta pública "/imagenes/<id>" para registrarla en POST /galeria.
   // Solo admin: es el único rol que puede publicar en la galería.
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')

@@ -20,10 +20,17 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Todas las rutas del API viven bajo /api (p. ej. /api/health, /api/auth/login).
-  // El frontend define esa misma base en `environment.apiUrl`, así que no hay
-  // ruta pública sin prefijo excepto las imágenes legacy de /uploads.
-  app.setGlobalPrefix('api');
+  // Las rutas del API se sirven en la RAIZ (p. ej. /health, /auth/login).
+  // El frontend define ese mismo origen en `environment.apiUrl` (sin sufijo
+  // "/api"), así que ambos lados deben coincidir: añadir un prefijo aquí sin
+  // cambiarlo allí deja todas las llamadas en 404.
+  //
+  // Excepciones: `/uploads` (imágenes legacy en disco) mantiene su prefijo.
+  //
+  // Nota histórica: hasta 2026-11-05 esto era `app.setGlobalPrefix('api')`.
+  // Las rutas de imagen guardadas en la BD por versiones anteriores
+  // ("/api/imagenes/<id>") siguen siendo válidas para borrar/validar, y el SPA
+  // las normaliza al pintarlas (ver `urlImagen()`).
 
   // CORS: el frontend de desarrollo (ng serve en localhost:4200) y los
   // despliegues de Netlify. La API vive en Render
@@ -69,7 +76,7 @@ async function bootstrap() {
   );
 
   // Las imagenes ya NO se guardan en disco: viven en la base de datos y se
-  // sirven con GET /api/imagenes/:id. Este servicio estatico se mantiene
+  // sirven con GET /imagenes/:id. Este servicio estatico se mantiene
   // solo por compatibilidad con imagenes legacy que quedaran en /uploads/.
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 

@@ -6,7 +6,7 @@ import { IsInt, Matches, Max, Min } from 'class-validator';
 const HORA_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 /**
- * Body de `POST /api/horarios-trabajador`: una franja de la plantilla semanal.
+ * Body de `POST /horarios-trabajador`: una franja de la plantilla semanal.
  * Aquí solo se valida el formato y el rango 0-6 del día; que `hora_fin` sea
  * posterior a `hora_inicio` y que el empleado exista se comprueba en el
  * servicio, porque requiere comparar campos o consultar la BD.

@@ -20,7 +20,7 @@ export class AuthService {
   ) {}
 
   /**
-   * `POST /api/auth/login` → `{ access_token, token_type: 'Bearer', expires_in }`.
+   * `POST /auth/login` → `{ access_token, token_type: 'Bearer', expires_in }`.
    * Mismo error para "email no existe" y "contraseña incorrecta": no se revela
    * qué parte falló.
    */
