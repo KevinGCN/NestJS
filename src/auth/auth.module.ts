@@ -1,6 +1,7 @@
 /**
  * Módulo de autenticación: registra `JwtModule` (firma/verificación del token),
- * la estrategia de Passport y expone `POST /auth/login` + `GET /auth/me`.
+ * la estrategia de Passport y expone `POST /auth/login`, `POST /auth/google`
+ * y `GET /auth/me`.
  *
  * Importa `UsuariosModule` porque tanto `AuthService` (login) como `JwtStrategy`
  * (validar que la cuenta sigue existiendo) necesitan `UsuariosService`.
